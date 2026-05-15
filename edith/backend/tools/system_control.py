@@ -4,7 +4,7 @@ Full Windows control from WSL via cmd.exe / PowerShell bridge.
 Also handles WSL-side file ops, shell commands, processes.
 """
 
-import os, re, subprocess, datetime, socket, psutil, shlex
+import os, re, subprocess, datetime, socket, psutil
 from pathlib import Path
 from config.config import WIN_CMD, WIN_PS, WIN_USER, NOTES_FILE
 
@@ -179,15 +179,7 @@ class SystemControl:
     # ── Shell (WSL/Linux side) ────────────────────────────────────────────────
     def shell(self, cmd: str) -> str:
         try:
-            args = shlex.split(cmd)
-            if not args:
-                return "Empty command."
-
-            safe_commands = {'ls', 'pwd', 'whoami', 'date', 'uname', 'echo', 'cat', 'grep', 'tail', 'head', 'ps', 'df'}
-            if args[0] not in safe_commands:
-                return f"Command '{args[0]}' is not allowed."
-
-            r = subprocess.run(args, shell=False, capture_output=True, text=True, timeout=20)
+            r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=20)
             return (r.stdout or r.stderr or "No output.").strip()[:2000]
         except subprocess.TimeoutExpired:
             return "Command timed out."

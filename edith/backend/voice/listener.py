@@ -10,17 +10,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))
 from config.config import WHISPER_MODEL, WAKE_WORD, LISTEN_SECONDS, SAMPLERATE, PORT
 
 
-def record_and_transcribe(model, sd, wav_write):
-    audio = sd.rec(int(LISTEN_SECONDS * SAMPLERATE),
-                   samplerate=SAMPLERATE, channels=1, dtype="int16")
-    sd.wait()
-    tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
-    wav_write(tmp.name, SAMPLERATE, audio)
-    result = model.transcribe(tmp.name, language="en")
-    os.unlink(tmp.name)
-    return result["text"].strip()
-
-
 async def run():
     try:
         import whisper
@@ -40,7 +29,14 @@ async def run():
         print("[Listener] Connected to EDITH backend.")
         while True:
             # Capture audio
-            text = record_and_transcribe(model, sd, wav_write).lower()
+            audio = sd.rec(int(LISTEN_SECONDS * SAMPLERATE),
+                           samplerate=SAMPLERATE, channels=1, dtype="int16")
+            sd.wait()
+            tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+            wav_write(tmp.name, SAMPLERATE, audio)
+            result = model.transcribe(tmp.name, language="en")
+            os.unlink(tmp.name)
+            text = result["text"].strip().lower()
 
             if not text or len(text) < 3:
                 continue
@@ -52,7 +48,14 @@ async def run():
                 if not query:
                     # listen again for the actual command
                     print("[Listener] Wake word detected — command?")
-                    query = record_and_transcribe(model, sd, wav_write)
+                    audio2 = sd.rec(int(LISTEN_SECONDS * SAMPLERATE),
+                                    samplerate=SAMPLERATE, channels=1, dtype="int16")
+                    sd.wait()
+                    tmp2 = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+                    wav_write(tmp2.name, SAMPLERATE, audio2)
+                    r2 = model.transcribe(tmp2.name, language="en")
+                    os.unlink(tmp2.name)
+                    query = r2["text"].strip()
 
                 if query:
                     print(f"[Sending] {query}")

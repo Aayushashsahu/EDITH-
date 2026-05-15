@@ -45,14 +45,7 @@ class LLMClient:
                 ) as r:
                     data = await r.json()
                     return data.get("embedding", [])
-        except aiohttp.ClientError as e:
-            print(f"[LLM] Embed network error: {e}")
-            return []
-        except asyncio.TimeoutError as e:
-            print(f"[LLM] Embed timeout error: {e}")
-            return []
-        except Exception as e:
-            print(f"[LLM] Embed unexpected error: {e}")
+        except Exception:
             return []
 
     async def is_alive(self) -> bool:
@@ -63,14 +56,7 @@ class LLMClient:
                     timeout=aiohttp.ClientTimeout(total=3)
                 ) as r:
                     return r.status == 200
-        except aiohttp.ClientError as e:
-            print(f"[LLM] is_alive network error: {e}")
-            return False
-        except asyncio.TimeoutError as e:
-            print(f"[LLM] is_alive timeout error: {e}")
-            return False
-        except Exception as e:
-            print(f"[LLM] is_alive unexpected error: {e}")
+        except Exception:
             return False
 
     async def list_models(self) -> list:
@@ -79,12 +65,5 @@ class LLMClient:
                 async with s.get(f"{self.base}/api/tags") as r:
                     data = await r.json()
                     return [m["name"] for m in data.get("models", [])]
-        except aiohttp.ClientError as e:
-            print(f"[LLM] list_models network error: {e}")
-            return []
-        except asyncio.TimeoutError as e:
-            print(f"[LLM] list_models timeout error: {e}")
-            return []
-        except Exception as e:
-            print(f"[LLM] list_models unexpected error: {e}")
+        except Exception:
             return []
