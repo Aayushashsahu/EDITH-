@@ -8,6 +8,8 @@ from config.config import TTS_ENGINE, PIPER_BIN, PIPER_MODEL
 
 
 class TTSEngine:
+    _kokoro_pipe = None
+
     def __init__(self):
         self._pyttsx = None
         print(f"  [TTS]    Engine: {TTS_ENGINE}")
@@ -48,10 +50,12 @@ class TTSEngine:
 
     def _kokoro(self, text: str):
         try:
-            from kokoro import KPipeline
             import sounddevice as sd
-            pipe = KPipeline(lang_code="a")
-            for _, _, audio in pipe(text, voice="af_heart"):
+            if TTSEngine._kokoro_pipe is None:
+                from kokoro import KPipeline
+                TTSEngine._kokoro_pipe = KPipeline(lang_code="a")
+
+            for _, _, audio in TTSEngine._kokoro_pipe(text, voice="af_heart"):
                 sd.play(audio, 24000); sd.wait()
         except Exception:
             self._pyttsx3(text)
