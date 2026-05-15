@@ -1,0 +1,33 @@
+# E.D.I.T.H. V8 — Python dependencies
+# pip install -r requirements.txt
+
+# ── Backend ────────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+websockets>=12.0
+aiohttp>=3.9.0
+
+# ── Vector DB (Second Brain) ───────────────────────────────────────────────
+chromadb>=0.5.0
+
+# ── Voice ─────────────────────────────────────────────────────────────────
+openai-whisper
+sounddevice
+scipy
+numpy
+pyttsx3
+
+# ── Web ────────────────────────────────────────────────────────────────────
+beautifulsoup4
+lxml
+
+# ── System ────────────────────────────────────────────────────────────────
+psutil
+
+# ── Automations ───────────────────────────────────────────────────────────
+apscheduler>=3.10.0
+
+# ── Optional extras ───────────────────────────────────────────────────────
+# pymupdf                     # PDF reading         → pip install pymupdf
+# python-telegram-bot>=20.0   # Telegram remote     → pip install python-telegram-bot
+# kokoro-onnx                 # Better TTS          → pip install kokoro-onnx
