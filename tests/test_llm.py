@@ -7,6 +7,7 @@ class TestLLMClientEmbed(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         # Mock aiohttp and config before importing LLMClient
         cls.mock_aiohttp = MagicMock()
+        cls.mock_aiohttp.ClientError = type('ClientError', (Exception,), {})
         cls.mock_config = MagicMock()
         cls.mock_config.OLLAMA_URL = "http://localhost:11434"
         cls.mock_config.OLLAMA_TIMEOUT = 120
