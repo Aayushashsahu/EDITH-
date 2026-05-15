@@ -19,7 +19,7 @@ def _cmd(command: str) -> str:
         return "[Bridge unavailable — check WIN_CMD path in config.py]"
     except subprocess.TimeoutExpired:
         return "Command timed out."
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError) as e:
         return f"Error: {e}"
 
 def _ps(script: str) -> str:
@@ -29,7 +29,7 @@ def _ps(script: str) -> str:
         return (r.stdout or r.stderr or "").strip()[:2000]
     except FileNotFoundError:
         return "[PowerShell bridge unavailable]"
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError) as e:
         return f"PowerShell error: {e}"
 
 
@@ -183,7 +183,7 @@ class SystemControl:
             return (r.stdout or r.stderr or "No output.").strip()[:2000]
         except subprocess.TimeoutExpired:
             return "Command timed out."
-        except Exception as e:
+        except (subprocess.SubprocessError, OSError) as e:
             return f"Shell error: {e}"
 
     # ── Files ─────────────────────────────────────────────────────────────────
@@ -232,6 +232,6 @@ class SystemControl:
         h = socket.gethostname()
         try:
             ip = socket.gethostbyname(h)
-        except Exception:
+        except OSError:
             ip = "unknown"
         return f"Host: {h}  ·  IP: {ip}"
