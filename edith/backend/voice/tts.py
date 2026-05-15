@@ -3,7 +3,7 @@ E.D.I.T.H. V8 — TTS Engine
 Priority: Piper (neural, offline) → Kokoro → pyttsx3 (fallback)
 """
 
-import asyncio, os, re, subprocess, tempfile
+import asyncio, os, re, subprocess, tempfile, traceback
 from config.config import TTS_ENGINE, PIPER_BIN, PIPER_MODEL
 
 
@@ -70,6 +70,7 @@ class TTSEngine:
             self._pyttsx.runAndWait()
         except Exception as e:
             print(f"  [TTS]    pyttsx3 error: {e}")
+            traceback.print_exc()
 
     def _clean(self, text: str) -> str:
         text = re.sub(r"[*_`#>~]", "", text)
