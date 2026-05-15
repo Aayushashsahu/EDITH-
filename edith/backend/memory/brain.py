@@ -34,6 +34,16 @@ class SecondBrain:
     def count(self) -> int:
         return self.col.count()
 
+
+    async def add_memory(self, text: str, meta: dict = None):
+        if not text:
+            return
+        # Optional chunking could go here
+        vec = await self.llm.embed(text)
+        if vec:
+            self.store.add(text, vec, meta)
+            self.log.info(f"Memory stored: {text[:40]}...")
+
     # ── Ingestion ─────────────────────────────────────────────────────────────
     async def ingest_text(self, text: str, source: str = "manual") -> int:
         chunks = self._chunk(text)
