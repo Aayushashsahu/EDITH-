@@ -66,6 +66,31 @@ async def shutdown():
 
 
 # ── WebSocket ─────────────────────────────────────────────────────────────────
+async def handle_message(ws: WebSocket, data: dict):
+    t = data.get("type", "")
+
+    if t == "query":
+        query = data.get("content", "").strip()
+        if not query:
+            return
+        await broadcast({"type": "user_message",  "content": query})
+        await broadcast({"type": "state", "state": "processing"})
+        response = await orc.handle(query)
+        await broadcast({"type": "edith_message", "content": response})
+        await broadcast({"type": "state", "state": "standby", "model": orc.model})
+        asyncio.create_task(tts.speak_async(response))
+
+    elif t == "ingest":
+        text   = data.get("text", "")
+        source = data.get("source", "ws")
+        if text:
+            await orc.brain.ingest_text(text, source)
+            await ws.send_text(json.dumps({"type": "system", "content": "Stored in second brain."}))
+
+    elif t == "ping":
+        await ws.send_text(json.dumps({"type": "pong"}))
+
+
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
     await ws.accept()
@@ -78,28 +103,7 @@ async def ws_endpoint(ws: WebSocket):
         while True:
             raw  = await ws.receive_text()
             data = json.loads(raw)
-            t    = data.get("type", "")
-
-            if t == "query":
-                query = data.get("content", "").strip()
-                if not query:
-                    continue
-                await broadcast({"type": "user_message",  "content": query})
-                await broadcast({"type": "state", "state": "processing"})
-                response = await orc.handle(query)
-                await broadcast({"type": "edith_message", "content": response})
-                await broadcast({"type": "state", "state": "standby", "model": orc.model})
-                asyncio.create_task(tts.speak_async(response))
-
-            elif t == "ingest":
-                text   = data.get("text", "")
-                source = data.get("source", "ws")
-                if text:
-                    await orc.brain.ingest_text(text, source)
-                    await ws.send_text(json.dumps({"type": "system", "content": "Stored in second brain."}))
-
-            elif t == "ping":
-                await ws.send_text(json.dumps({"type": "pong"}))
+            await handle_message(ws, data)
 
     except WebSocketDisconnect:
         if ws in clients:
