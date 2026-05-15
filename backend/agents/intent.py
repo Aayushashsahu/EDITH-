@@ -108,7 +108,7 @@ class IntentRouter:
         # ── second brain ingest from voice ────────────────────────────────────
         m = re.search(r"(?:remember that|learn that|store in brain|add to brain)\s+(.+)", ql)
         if m:
-            self.brain.ingest_text(m.group(1).strip(), source="voice_command")
+            await self.brain.ingest_text(m.group(1).strip(), source="voice_command")
             return "Stored in your second brain, sir.", True
 
         # ── type text ─────────────────────────────────────────────────────────
