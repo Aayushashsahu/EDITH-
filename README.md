@@ -4,9 +4,6 @@
 
 Built from scratch as a first-year CSE student. Runs completely locally on WSL2 and gives me real-time voice + visual interaction with powerful local LLMs.
 
-![EDITH HUD](https://via.placeholder.com/800x400?text=EDITH+HUD+Screenshot)  
-*(Add 3-4 screenshots/GIFs here after you upload them)*
-
 ## ✨ Key Features
 
 - **Multi-Model LLM Routing** — Automatically picks between `llama3.2:3b` (fast), `qwen2.5:7b` (smart), `codellama` (code), and `llava` (vision)
@@ -25,15 +22,4 @@ Built from scratch as a first-year CSE student. Runs completely locally on WSL2 
 - **AI**: Ollama, ChromaDB, Whisper, Piper TTS
 - **Others**: Python, SQLite, ADB, APScheduler
 
-## Quick Start
 
-```bash
-# Clone the repo
-git clone https://github.com/Aayushashsahu/EDITH-.git
-cd EDITH-/edith
-
-# Run setup
-bash scripts/setup.sh
-
-# Start EDITH
-bash scripts/start.sh
