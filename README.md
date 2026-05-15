@@ -1,5 +1,5 @@
-<<<<<<< HEAD
-# E.D.I.T.H. V8
+
+# E.D.I.T.H. 
 ### *Even Dead I'm The Hero*
 
 > Tony Stark's personal AI — rebuilt from scratch. 100% offline, runs on your Samsung Book 5 360 via WSL2.
@@ -228,4 +228,3 @@ Built from scratch as a first-year CSE student. Runs completely locally on WSL2 
 - **Others**: Python, SQLite, ADB, APScheduler
 
 
->>>>>>> 8d9c47276084f7905860ca39b41a338569562088
