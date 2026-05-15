@@ -11,7 +11,6 @@ Usage:
 import asyncio
 import os
 import sys
-import json
 import datetime
 sys.path.insert(0, os.path.dirname(__file__))
 
