@@ -199,5 +199,5 @@ python cli.py           # text input
 python cli.py --voice   # voice input
 ```
 
-
-
+## License
+MIT License © 2026 Aayush Sahu
