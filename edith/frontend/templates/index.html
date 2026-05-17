@@ -723,8 +723,30 @@ body::after {
 <script>
 'use strict';
 
+let API_KEY = localStorage.getItem("edith_api_key");
+if (API_KEY === null) {
+    API_KEY = prompt("Enter E.D.I.T.H. API Key (leave blank if disabled):");
+    if (API_KEY !== null) {
+        localStorage.setItem("edith_api_key", API_KEY);
+    } else {
+        API_KEY = "";
+    }
+}
+
+// Intercept fetch to handle 401s
+const originalFetch = window.fetch;
+window.fetch = async function() {
+    const res = await originalFetch.apply(this, arguments);
+    if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem("edith_api_key");
+        location.reload();
+    }
+    return res;
+};
+
+
 // ── WebSocket ──────────────────────────────────────────────────────────────
-const WS = `ws://${location.hostname}:8888/ws`;
+const WS = `ws://${location.hostname}:8888/ws?api_key=${API_KEY}`;
 let ws, wsReady = false, msgCount = 0;
 
 function connectWS() {
@@ -852,7 +874,7 @@ function toggleVoice() {
 // ── Status polling ─────────────────────────────────────────────────────────
 async function fetchStatus() {
   try {
-    const d = await (await fetch("/api/status")).json();
+    const d = await (await fetch("/api/status", {headers: {"X-API-Key": API_KEY}})).json();
     const circ = 201.1;
 
     // CPU ring
@@ -1010,7 +1032,7 @@ let tasks = [];
 
 async function loadTasks() {
   try {
-    const d = await (await fetch("/api/tasks")).json();
+    const d = await (await fetch("/api/tasks", {headers: {"X-API-Key": API_KEY}})).json();
     tasks = d.tasks || [];
     renderTasksSidebar();
   } catch {}
@@ -1031,7 +1053,7 @@ function renderTasksSidebar() {
 }
 
 async function completeTask(id) {
-  await fetch(`/api/tasks/${id}`, { method: "PATCH" });
+  await fetch(`/api/tasks/${id}`, { method: "PATCH", headers: {"X-API-Key": API_KEY} });
   await loadTasks();
   toast("Task complete", "Marked done.");
 }
@@ -1076,7 +1098,7 @@ async function addTask() {
   if (!title) return;
   await fetch("/api/tasks", {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
+    headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
     body: JSON.stringify({ title, due, priority: "medium" })
   });
   await loadTasks();
@@ -1104,7 +1126,7 @@ async function ingestBrain() {
   if (!text) return;
   const r = await (await fetch("/api/ingest", {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
+    headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
     body: JSON.stringify({ text, source })
   })).json();
   closeModal();
@@ -1114,7 +1136,7 @@ async function ingestBrain() {
 
 async function openNotes() {
   try {
-    const d = await (await fetch("/api/notes")).json();
+    const d = await (await fetch("/api/notes", {headers: {"X-API-Key": API_KEY}})).json();
     const lines = (d.notes || "No notes yet.").split("\n")
       .map(l => `<div style="font-family:var(--mono);font-size:11px;color:var(--text);padding:3px 0;border-bottom:1px solid var(--border2)">${esc(l)}</div>`)
       .join("");
