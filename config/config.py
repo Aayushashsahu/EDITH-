@@ -85,3 +85,6 @@ NEWS_RSS         = "https://hnrss.org/frontpage"
 ACCENT           = "#e8c840"             # Stark gold
 ACCENT2          = "#ff4d1c"             # Iron Man red
 BG               = "#04080f"
+
+# ── Security ──────────────────────────────────────────────────────────────────
+API_KEY          = ""  # Set an API key to secure the web interface

@@ -1,5 +1,4 @@
-
-# E.D.I.T.H. 
+# E.D.I.T.H. V8
 ### *Even Dead I'm The Hero*
 
 > Tony Stark's personal AI — rebuilt from scratch. 100% offline, runs on your Samsung Book 5 360 via WSL2.
@@ -198,6 +197,10 @@ No browser needed:
 python cli.py           # text input
 python cli.py --voice   # voice input
 ```
+
+---
+
+*Built for Astra · EDITH V8 · WSL2 Ubuntu · Samsung Book 5 360*
 
 ## License
 MIT License © 2026 Aayush Sahu

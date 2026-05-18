@@ -7,7 +7,8 @@ Start: uvicorn backend.main:app --host 0.0.0.0 --port 8888 --reload
 import asyncio, json, os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, Security, Request
+from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,9 +19,22 @@ from backend.memory.store import MemoryStore
 from backend.memory.brain import SecondBrain
 from backend.voice.tts import TTSEngine
 from backend.automations.scheduler import setup as setup_sched
-from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, ALLOWED_ORIGINS
+from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY, ALLOWED_ORIGINS
 
-app = FastAPI(title=f"{SYSTEM_NAME} {SYSTEM_VERSION}")
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+async def verify_api_key(request: Request, api_key_header: str = Security(api_key_header)):
+    if not API_KEY: return True
+    if request.url.path == "/" or request.url.path.startswith("/static"):
+        return True
+    if api_key_header == API_KEY:
+        return True
+    if request.query_params.get("api_key") == API_KEY:
+        return True
+    raise HTTPException(status_code=401, detail="Unauthorized")
+
+app = FastAPI(title=f"{SYSTEM_NAME} {SYSTEM_VERSION}", dependencies=[Depends(verify_api_key)])
 app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS, allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "frontend" / "static")), name="static")
 
@@ -68,6 +82,9 @@ async def shutdown():
 # ── WebSocket ─────────────────────────────────────────────────────────────────
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
+    if API_KEY and ws.query_params.get("api_key") != API_KEY:
+        await ws.close(code=1008)
+        return
     await ws.accept()
     clients.append(ws)
     await ws.send_text(json.dumps({
