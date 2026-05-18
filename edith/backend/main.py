@@ -19,7 +19,7 @@ from backend.memory.store import MemoryStore
 from backend.memory.brain import SecondBrain
 from backend.voice.tts import TTSEngine
 from backend.automations.scheduler import setup as setup_sched
-from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY
+from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY, ALLOWED_ORIGINS
 
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -35,8 +35,7 @@ async def verify_api_key(request: Request, api_key_header: str = Security(api_ke
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 app = FastAPI(title=f"{SYSTEM_NAME} {SYSTEM_VERSION}", dependencies=[Depends(verify_api_key)])
-
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS, allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "frontend" / "static")), name="static")
 
 # ── Shared state ──────────────────────────────────────────────────────────────
@@ -113,7 +112,7 @@ async def ws_endpoint(ws: WebSocket):
                 text   = data.get("text", "")
                 source = data.get("source", "ws")
                 if text:
-                    orc.brain.ingest_text(text, source)
+                    await orc.brain.ingest_text(text, source)
                     await ws.send_text(json.dumps({"type": "system", "content": "Stored in second brain."}))
 
             elif t == "ping":
@@ -164,7 +163,7 @@ async def ingest(body: dict):
     text   = body.get("text", "")
     source = body.get("source", "api")
     if text and orc:
-        n = orc.brain.ingest_text(text, source)
+        n = await orc.brain.ingest_text(text, source)
         return {"chunks": n}
     return JSONResponse({"error": "no text"}, status_code=400)
 

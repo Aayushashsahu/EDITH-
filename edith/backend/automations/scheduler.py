@@ -56,10 +56,13 @@ async def task_check(orchestrator, broadcast):
     from backend.automations.task_manager import TaskManager
     tm  = TaskManager()
     due = [t for t in tm.due_today() if not t["notified"]]
+    task_ids = []
     for t in due:
         await broadcast({
             "type": "notification",
             "title": "📋 Task Due",
             "message": t["title"]
         })
-        tm.mark_notified(t["id"])
+        task_ids.append(t["id"])
+    if task_ids:
+        tm.mark_notified_batch(task_ids)
