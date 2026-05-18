@@ -1,0 +1,3 @@
+## 2024-05-18 - Model instantiation inside TTS methods creates critical bottleneck
+**Learning:** In the TTS logic for Kokoro, the `KPipeline` instance was being fully re-instantiated and loaded into memory on every single call to the `speak()` method. This is a massively expensive operation causing multi-second delays per invocation, contrary to the typical assumption that core models are loaded once at startup.
+**Action:** When inspecting AI/ML pipelines (like TTS, STT, LLMs) in a codebase, actively search for the initialization points. Always verify that model instances are cached as class attributes after initial load to avoid redundant, expensive instantiations.
