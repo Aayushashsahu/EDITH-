@@ -58,6 +58,13 @@ class TaskManager:
         with sqlite3.connect(str(TASKS_DB)) as c:
             c.execute("UPDATE tasks SET notified=1 WHERE id=?", (task_id,)); c.commit()
 
+    def mark_notified_batch(self, task_ids: list[int]):
+        if not task_ids:
+            return
+        with sqlite3.connect(str(TASKS_DB)) as c:
+            c.executemany("UPDATE tasks SET notified=1 WHERE id=?", [(tid,) for tid in task_ids])
+            c.commit()
+
     def _parse_due(self, text: str) -> str | None:
         t = text.lower().strip()
         today = datetime.date.today()

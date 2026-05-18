@@ -7,6 +7,10 @@ class TestLLMClientEmbed(unittest.IsolatedAsyncioTestCase):
     def setUpClass(cls):
         # Mock aiohttp and config before importing LLMClient
         cls.mock_aiohttp = MagicMock()
+        class MockClientConnectorError(Exception):
+            pass
+        cls.mock_aiohttp.ClientConnectorError = MockClientConnectorError
+        cls.mock_aiohttp.ClientTimeout = MagicMock()
         cls.mock_config = MagicMock()
         cls.mock_config.OLLAMA_URL = "http://localhost:11434"
         cls.mock_config.OLLAMA_TIMEOUT = 120
@@ -109,6 +113,81 @@ class TestLLMClientEmbed(unittest.IsolatedAsyncioTestCase):
         result = await self.client.embed("test text")
 
         self.assertEqual(result, [])
+
+    @patch('aiohttp.ClientSession')
+    async def test_generate_success(self, mock_session_cls):
+        # Setup mock session
+        mock_session = MagicMock()
+        mock_session_cls.return_value = mock_session
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=None)
+
+        # Setup mock response
+        mock_response = MagicMock()
+        mock_response.json = AsyncMock(return_value={"response": "This is a test response."})
+        mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+        mock_response.__aexit__ = AsyncMock(return_value=None)
+
+        mock_session.post.return_value = mock_response
+
+        result = await self.client.generate("test prompt")
+
+        self.assertEqual(result, "This is a test response.")
+        mock_session.post.assert_called_once()
+        # Verify call arguments
+        args, kwargs = mock_session.post.call_args
+        self.assertEqual(args[0], "http://localhost:11434/api/generate")
+        self.assertEqual(kwargs['json'], {
+            "model": "llama3.2:3b",
+            "prompt": "test prompt",
+            "stream": False,
+            "options": {"temperature": 0.72, "num_predict": 512}
+        })
+
+    @patch('aiohttp.ClientSession')
+    async def test_generate_client_connector_error(self, mock_session_cls):
+        # Setup mock session to raise aiohttp.ClientConnectorError
+        mock_session = MagicMock()
+        mock_session_cls.return_value = mock_session
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=None)
+
+        # Import the mock exception that was injected
+        import aiohttp
+        mock_session.post.side_effect = aiohttp.ClientConnectorError()
+
+        result = await self.client.generate("test prompt")
+
+        self.assertEqual(result, "EDITH offline — Ollama not running. Start with: ollama serve")
+
+    @patch('aiohttp.ClientSession')
+    async def test_generate_timeout_error(self, mock_session_cls):
+        # Setup mock session to raise asyncio.TimeoutError
+        mock_session = MagicMock()
+        mock_session_cls.return_value = mock_session
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=None)
+
+        import asyncio
+        mock_session.post.side_effect = asyncio.TimeoutError()
+
+        result = await self.client.generate("test prompt")
+
+        self.assertEqual(result, "Request timed out. Try a smaller model or shorter query.")
+
+    @patch('aiohttp.ClientSession')
+    async def test_generate_generic_exception(self, mock_session_cls):
+        # Setup mock session to raise Exception
+        mock_session = MagicMock()
+        mock_session_cls.return_value = mock_session
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=None)
+
+        mock_session.post.side_effect = Exception("Some generic error")
+
+        result = await self.client.generate("test prompt")
+
+        self.assertEqual(result, "LLM error: Some generic error")
 
 if __name__ == '__main__':
     unittest.main()

@@ -113,7 +113,7 @@ async def ws_endpoint(ws: WebSocket):
                 text   = data.get("text", "")
                 source = data.get("source", "ws")
                 if text:
-                    orc.brain.ingest_text(text, source)
+                    await orc.brain.ingest_text(text, source)
                     await ws.send_text(json.dumps({"type": "system", "content": "Stored in second brain."}))
 
             elif t == "ping":
@@ -164,7 +164,7 @@ async def ingest(body: dict):
     text   = body.get("text", "")
     source = body.get("source", "api")
     if text and orc:
-        n = orc.brain.ingest_text(text, source)
+        n = await orc.brain.ingest_text(text, source)
         return {"chunks": n}
     return JSONResponse({"error": "no text"}, status_code=400)
 
