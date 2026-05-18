@@ -34,22 +34,14 @@ class SecondBrain:
     def count(self) -> int:
         return self.col.count()
 
-
-    async def add_memory(self, text: str, meta: dict = None):
-        if not text:
-            return
-        # Optional chunking could go here
-        vec = await self.llm.embed(text)
-        if vec:
-            self.store.add(text, vec, meta)
-            self.log.info(f"Memory stored: {text[:40]}...")
-
     # ── Ingestion ─────────────────────────────────────────────────────────────
-    async def ingest_text(self, text: str, source: str = "manual") -> int:
+    def ingest_text(self, text: str, source: str = "manual") -> int:
         chunks = self._chunk(text)
         if not chunks:
             return 0
-        embeddings = await self._embed_all(chunks)
+        loop = asyncio.new_event_loop()
+        embeddings = loop.run_until_complete(self._embed_all(chunks))
+        loop.close()
         if not embeddings or not all(embeddings):
             return 0
         ids = [f"{source}_{abs(hash(c)) % 10**9}" for c in chunks]
@@ -67,7 +59,7 @@ class SecondBrain:
             text = self._read_pdf(filepath)
         else:
             text = p.read_text(errors="ignore")
-        return await self.ingest_text(text, source=p.name)
+        return self.ingest_text(text, source=p.name)
 
     # ── Retrieval ─────────────────────────────────────────────────────────────
     async def retrieve(self, query: str, k: int = RETRIEVAL_K) -> str:

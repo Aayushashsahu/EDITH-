@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # E.D.I.T.H. V8
 ### *Even Dead I'm The Hero*
 
@@ -201,6 +202,30 @@ python cli.py --voice   # voice input
 ---
 
 *Built for Astra · EDITH V8 · WSL2 Ubuntu · Samsung Book 5 360*
+=======
+# E.D.I.T.H. — Even Dead I'm The Hero
 
-## License
-MIT License © 2026 Aayush Sahu
+**My fully offline personal AI system** — inspired by Iron Man's JARVIS.
+
+Built from scratch as a first-year CSE student. Runs completely locally on WSL2 and gives me real-time voice + visual interaction with powerful local LLMs.
+
+## ✨ Key Features
+
+- **Multi-Model LLM Routing** — Automatically picks between `llama3.2:3b` (fast), `qwen2.5:7b` (smart), `codellama` (code), and `llava` (vision)
+- **Local RAG (Second Brain)** — Persistent memory with ChromaDB + nomic embeddings
+- **Full Voice Interface** — Whisper STT + Neural TTS (Piper / Kokoro)
+- **Real-time Stark HUD** — Beautiful Iron Man style frontend with WebSocket
+- **System Control** — Controls Windows (open apps, volume, lock, sleep, etc.)
+- **Automations** — Scheduled briefings, reminders via APScheduler
+- **Remote Access** — Full control via Telegram bot from phone
+- **Phone Integration** — ADB for call detection, SMS, etc.
+
+## Tech Stack
+
+- **Backend**: FastAPI + WebSocket
+- **Frontend**: HTML/CSS/JS (Exo 2 + Share Tech Mono font)
+- **AI**: Ollama, ChromaDB, Whisper, Piper TTS
+- **Others**: Python, SQLite, ADB, APScheduler
+
+
+>>>>>>> 8d9c47276084f7905860ca39b41a338569562088
