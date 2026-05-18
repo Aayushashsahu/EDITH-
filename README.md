@@ -200,7 +200,5 @@ python cli.py --voice   # voice input
 
 ---
 
-*Built for Astra · EDITH V8 · WSL2 Ubuntu · Samsung Book 5 360*
-
 ## License
 MIT License © 2026 Aayush Sahu
