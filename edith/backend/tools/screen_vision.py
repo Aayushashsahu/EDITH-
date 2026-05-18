@@ -8,10 +8,8 @@ import asyncio
 import base64
 import os
 import subprocess
-import tempfile
 import datetime
 import aiohttp
-from pathlib import Path
 from config.config import OLLAMA_URL, MODEL_VISION, OLLAMA_TIMEOUT, WIN_USER
 
 
