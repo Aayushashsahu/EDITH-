@@ -59,18 +59,8 @@ class ScreenVision:
         )
         try:
             from config.config import WIN_PS
-            proc = await asyncio.create_subprocess_exec(
-                WIN_PS, "-NoProfile", "-Command", ps,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            try:
-                await asyncio.wait_for(proc.communicate(), timeout=15)
-            except asyncio.TimeoutError:
-                proc.kill()
-                await proc.communicate()
-                raise TimeoutError("Capture command timed out")
-
+            subprocess.run([WIN_PS, "-NoProfile", "-Command", ps],
+                           capture_output=True, timeout=15)
             await asyncio.sleep(0.5)
             return wsl if os.path.exists(wsl) else None
         except Exception as e:

@@ -11,6 +11,7 @@ Usage:
 import asyncio
 import os
 import sys
+import json
 import datetime
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -95,7 +96,7 @@ async def text_loop(orc: Orchestrator, tts: TTSEngine):
 
         if query.lower().startswith("remember:"):
             text = query[9:].strip()
-            await orc.brain.ingest_text(text, source="cli")
+            orc.brain.ingest_text(text, source="cli")
             print(f"{DIM}Stored in second brain.{B}")
             continue
 
