@@ -594,7 +594,7 @@ body::after {
   <div id="modal">
     <div id="modal-head">
       <span id="modal-title">TASKS</span>
-      <button id="modal-close" onclick="closeModal()">✕</button>
+      <button id="modal-close" onclick="closeModal()" aria-label="Close modal">✕</button>
     </div>
     <div id="modal-body"></div>
   </div>
@@ -669,7 +669,7 @@ body::after {
 
   <!-- ══ CORE — ORB ══════════════════════════════ -->
   <main id="core">
-    <div id="orb-area" onclick="toggleVoice()">
+    <div id="orb-area" onclick="toggleVoice()" aria-label="Toggle voice activation" role="button" tabindex="0">
       <div class="orbit orbit-1"></div>
       <div class="orbit orbit-2"></div>
       <div class="orbit orbit-3"></div>
@@ -711,11 +711,11 @@ body::after {
       <span id="cmd-prefix">EDITH://</span>
       <input id="cmd-in" type="text"
              placeholder="Enter command or query…"
-             autocomplete="off" autocorrect="off" spellcheck="false">
+             autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Command input">
     </div>
-    <button class="hbtn" id="btn-voice" onclick="toggleVoice()">MIC</button>
-    <button class="hbtn" onclick="openTasks()">TASKS</button>
-    <button class="hbtn" id="btn-exec" onclick="submit()">EXECUTE ▶</button>
+    <button class="hbtn" id="btn-voice" onclick="toggleVoice()" aria-label="Toggle voice input">MIC</button>
+    <button class="hbtn" onclick="openTasks()" aria-label="Open tasks modal">TASKS</button>
+    <button class="hbtn" id="btn-exec" onclick="submit()" aria-label="Execute command">EXECUTE ▶</button>
   </footer>
 
 </div>
