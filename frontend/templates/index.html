@@ -484,6 +484,8 @@ body::after {
 /* ══════════════════════════════════════════════════
    NOTIFICATION OVERLAY
    ══════════════════════════════════════════════════ */
+*:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
 #notif-zone {
   position: fixed; top: 66px; right: 16px; z-index: 999;
   display: flex; flex-direction: column; gap: 8px; pointer-events: none;
@@ -587,14 +589,14 @@ body::after {
 <canvas id="bg-canvas"></canvas>
 
 <!-- Notifications -->
-<div id="notif-zone"></div>
+<div id="notif-zone" aria-live="polite" aria-atomic="true"></div>
 
 <!-- Modal -->
 <div id="modal-bg">
   <div id="modal">
     <div id="modal-head">
       <span id="modal-title">TASKS</span>
-      <button id="modal-close" onclick="closeModal()">✕</button>
+      <button id="modal-close" onclick="closeModal()" aria-label="Close modal">✕</button>
     </div>
     <div id="modal-body"></div>
   </div>
@@ -711,6 +713,7 @@ body::after {
       <span id="cmd-prefix">EDITH://</span>
       <input id="cmd-in" type="text"
              placeholder="Enter command or query…"
+             aria-label="Command input"
              autocomplete="off" autocorrect="off" spellcheck="false">
     </div>
     <button class="hbtn" id="btn-voice" onclick="toggleVoice()">MIC</button>
@@ -1084,8 +1087,8 @@ function openTasks() {
     : `<div class="dr-key" style="padding:10px;font-family:var(--mono)">No tasks.</div>`;
   openModal("// TASK QUEUE", `
     <div class="m-form">
-      <input class="m-input" id="new-task-title" placeholder="New task…">
-      <input class="m-input" style="max-width:120px" id="new-task-due" placeholder="Due (e.g. tomorrow)">
+      <input class="m-input" id="new-task-title" placeholder="New task…" aria-label="Task title">
+      <input class="m-input" style="max-width:120px" id="new-task-due" placeholder="Due (e.g. tomorrow)" aria-label="Due date">
       <button class="m-btn" onclick="addTask()">ADD</button>
     </div>
     <div>${rows}</div>
@@ -1112,9 +1115,9 @@ function openBrain() {
       Drop text below to store it in EDITH's long-term memory.
       Files: drop them in data/second_brain/ folder.
     </div>
-    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…"></textarea>
+    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…" aria-label="Brain content"></textarea>
     <div style="display:flex;gap:8px">
-      <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px">
+      <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px" aria-label="Source label">
       <button class="m-btn" onclick="ingestBrain()">STORE IN BRAIN</button>
     </div>
   `);
