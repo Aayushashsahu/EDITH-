@@ -1,0 +1,3 @@
+## 2026-05-21 - [Caching ML Pipelines in Memory]
+**Learning:** Instantiating heavy ML pipelines like Kokoro TTS within frequently called functions (e.g., `speak`) introduces significant latency due to repeated loading of models into memory/VRAM.
+**Action:** Cache the pipeline instance as a class attribute (`self._kokoro_pipe`) so it is initialized only once and reused across subsequent calls, minimizing processing overhead and memory thrashing.
