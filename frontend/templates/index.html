@@ -44,6 +44,22 @@ html, body {
   font-family: var(--sans);
 }
 
+/* Global focus visible styles for accessibility */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+#orb-area:focus-visible {
+  border-radius: 50%;
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+
 /* ── Noise grain texture ────────────────────────── */
 body::before {
   content: '';
@@ -594,7 +610,7 @@ body::after {
   <div id="modal">
     <div id="modal-head">
       <span id="modal-title">TASKS</span>
-      <button id="modal-close" onclick="closeModal()">✕</button>
+      <button id="modal-close" onclick="closeModal()" aria-label="Close modal">✕</button>
     </div>
     <div id="modal-body"></div>
   </div>
@@ -669,7 +685,7 @@ body::after {
 
   <!-- ══ CORE — ORB ══════════════════════════════ -->
   <main id="core">
-    <div id="orb-area" onclick="toggleVoice()">
+    <div id="orb-area" onclick="toggleVoice()" role="button" tabindex="0" aria-label="Toggle voice input" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleVoice(); }">
       <div class="orbit orbit-1"></div>
       <div class="orbit orbit-2"></div>
       <div class="orbit orbit-3"></div>
