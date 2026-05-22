@@ -4,7 +4,10 @@ WebSocket real-time comms, REST API, static file serving.
 Start: uvicorn backend.main:app --host 0.0.0.0 --port 8888 --reload
 """
 
-import asyncio, json, os, sys
+import asyncio
+import json
+import os
+import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, Security, Request
@@ -16,7 +19,6 @@ import uvicorn
 
 from backend.agents.orchestrator import Orchestrator
 from backend.memory.store import MemoryStore
-from backend.memory.brain import SecondBrain
 from backend.voice.tts import TTSEngine
 from backend.automations.scheduler import setup as setup_sched
 from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY

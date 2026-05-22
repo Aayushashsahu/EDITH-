@@ -2,7 +2,7 @@ import sys
 import os
 from pathlib import Path
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 # Ensure the mock BASE_DIR returns a string path that actually exists
 # so StaticFiles can mount it without complaining

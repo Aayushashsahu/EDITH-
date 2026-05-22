@@ -4,7 +4,12 @@ Samsung Galaxy wireless ADB — call detection, answer/end, SMS.
 Enable ADB_ENABLED=True and set ADB_IP in config.
 """
 
-import asyncio, re, subprocess, os, sys, shlex
+import asyncio
+import re
+import subprocess
+import os
+import sys
+import shlex
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))
 from config.config import ADB_ENABLED, ADB_IP
 
