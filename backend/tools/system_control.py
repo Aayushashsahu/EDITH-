@@ -4,7 +4,12 @@ Full Windows control from WSL via cmd.exe / PowerShell bridge.
 Also handles WSL-side file ops, shell commands, processes.
 """
 
-import os, re, subprocess, datetime, socket, psutil
+import os
+import re
+import subprocess
+import datetime
+import socket
+import psutil
 from pathlib import Path
 from config.config import WIN_CMD, WIN_PS, WIN_USER, NOTES_FILE
 
@@ -106,10 +111,33 @@ class SystemControl:
         return f"Closed {killed} instance(s) of {app}." if killed else f"{app} not found."
 
     def open_url(self, url: str) -> str:
-        if not url.startswith("http"):
+        import urllib.parse
+        if not url.startswith(("http://", "https://")):
             url = "https://" + url
-        _cmd(f"start {url}")
-        return f"Opened {url}."
+
+        try:
+            parsed = urllib.parse.urlparse(url)
+            if parsed.scheme not in ("http", "https"):
+                return "Invalid URL scheme. Only http and https are allowed."
+
+            safe_url = urllib.parse.urlunparse((
+                parsed.scheme,
+                parsed.netloc,
+                parsed.path,
+                parsed.params,
+                parsed.query,
+                parsed.fragment
+            ))
+
+            # Using _ps() safely opens URLs on Windows bypassing cmd.exe shell interpolation.
+            # We must ensure powershell doesn't evaluate the string either.
+            # Let's escape single quotes since we pass it to powershell in single quotes.
+            safe_url_ps = safe_url.replace("'", "''")
+
+            _ps(f"Start-Process '{safe_url_ps}'")
+            return f"Opened {safe_url}."
+        except Exception as e:
+            return f"Error opening URL: {e}"
 
     # ── Power ─────────────────────────────────────────────────────────────────
     def lock(self)     -> str: _cmd("rundll32.exe user32.dll,LockWorkStation"); return "Screen locked."
@@ -122,7 +150,7 @@ class SystemControl:
         pct = max(0, min(100, pct))
         out = _cmd(f"nircmd setsysvolume {int(pct*655.35)}")
         if "not recognized" in out.lower():
-            return f"Install nircmd for volume control. (https://www.nirsoft.net/utils/nircmd.html)"
+            return "Install nircmd for volume control. (https://www.nirsoft.net/utils/nircmd.html)"
         return f"Volume set to {pct}%."
 
     def mute(self) -> str:
@@ -161,17 +189,20 @@ class SystemControl:
         return f"Typed: {text}"
 
     def hotkey(self, keys: str) -> str:
-        _ps(f"(New-Object -ComObject WScript.Shell).SendKeys('{keys}')")
+        safe_keys = keys.replace("'", "''")
+        _ps(f"(New-Object -ComObject WScript.Shell).SendKeys('{safe_keys}')")
         return f"Sent keys: {keys}"
 
     # ── Windows toast notification ────────────────────────────────────────────
     def notify(self, title: str, body: str) -> str:
+        safe_title = title.replace("'", "''")
+        safe_body = body.replace("'", "''")
         ps = (
             "Add-Type -AssemblyName System.Windows.Forms;"
             "$n=New-Object System.Windows.Forms.NotifyIcon;"
             "$n.Icon=[System.Drawing.SystemIcons]::Information;"
             "$n.Visible=$true;"
-            f"$n.ShowBalloonTip(5000,'{title}','{body}',[System.Windows.Forms.ToolTipIcon]::None);"
+            f"$n.ShowBalloonTip(5000,'{safe_title}','{safe_body}',[System.Windows.Forms.ToolTipIcon]::None);"
         )
         _ps(ps)
         return f"Notification: {title}"
