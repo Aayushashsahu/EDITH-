@@ -3,7 +3,7 @@
 
 **Aayush Sahu**  
 Department of Computer Science and Engineering  
-MIT-ADT University (MITSOE), Pune, Maharashtra, India  
+MIT-ADT University (MITSOC), Pune, Maharashtra, India  
 May 2026
 
 ---
