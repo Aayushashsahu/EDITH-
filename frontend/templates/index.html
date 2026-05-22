@@ -594,7 +594,7 @@ body::after {
   <div id="modal">
     <div id="modal-head">
       <span id="modal-title">TASKS</span>
-      <button id="modal-close" onclick="closeModal()">✕</button>
+      <button id="modal-close" onclick="closeModal()" aria-label="Close dialog">✕</button>
     </div>
     <div id="modal-body"></div>
   </div>
@@ -669,7 +669,7 @@ body::after {
 
   <!-- ══ CORE — ORB ══════════════════════════════ -->
   <main id="core">
-    <div id="orb-area" onclick="toggleVoice()">
+    <div id="orb-area" role="button" tabindex="0" aria-label="Toggle voice command" onclick="toggleVoice()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleVoice(); }">
       <div class="orbit orbit-1"></div>
       <div class="orbit orbit-2"></div>
       <div class="orbit orbit-3"></div>
@@ -708,10 +708,11 @@ body::after {
   <!-- ══ FOOT — COMMAND BAR ═══════════════════════ -->
   <footer id="foot">
     <div id="cmd-box">
-      <span id="cmd-prefix">EDITH://</span>
+      <span id="cmd-prefix" aria-hidden="true">EDITH://</span>
       <input id="cmd-in" type="text"
+             aria-label="Command input"
              placeholder="Enter command or query…"
-             autocomplete="off" autocorrect="off" spellcheck="false">
+             autocomplete="off" autocorrect="off" spellcheck="false" autofocus>
     </div>
     <button class="hbtn" id="btn-voice" onclick="toggleVoice()">MIC</button>
     <button class="hbtn" onclick="openTasks()">TASKS</button>
