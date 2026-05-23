@@ -192,6 +192,12 @@ body::after {
 .dr-val.warn { color: var(--warn); }
 .dr-val.red  { color: var(--red2); }
 
+.text-btn {
+  background: none; border: none; cursor: pointer; padding: 0;
+  font-family: inherit; font-size: inherit; color: inherit;
+}
+.text-btn:hover { text-shadow: 0 0 8px currentColor; }
+
 /* Task list */
 .task-list { width: 100%; margin-top: 4px; }
 .task-item {
@@ -551,6 +557,9 @@ body::after {
 #modal-body::-webkit-scrollbar { width: 2px; }
 #modal-body::-webkit-scrollbar-thumb { background: var(--dim); }
 
+*:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 2px; }
+#cmd-in:focus-visible, .m-input:focus-visible { outline: none; }
+
 /* Task form inside modal */
 .m-form { display: flex; gap: 8px; margin-bottom: 16px; }
 .m-input {
@@ -660,7 +669,7 @@ body::after {
     <div class="sep"></div>
     <div class="section-label" style="display:flex;justify-content:space-between;width:100%">
       <span>// TASKS</span>
-      <span style="cursor:pointer;color:var(--gold)" onclick="openTasks()">+ ADD</span>
+      <button class="text-btn" style="color:var(--gold)" onclick="openTasks()">+ ADD</button>
     </div>
     <div class="task-list" id="task-list">
       <div class="dr-key" style="font-family:var(--mono);font-size:10px;padding:6px">Loading…</div>
@@ -695,10 +704,10 @@ body::after {
     <div id="chat-head">
       <span id="chat-head-label">// COMMS LOG</span>
       <div style="display:flex;gap:8px;align-items:center">
-        <span style="cursor:pointer;font-family:var(--mono);font-size:9px;color:var(--muted)"
-              onclick="openBrain()">+ BRAIN</span>
-        <span style="cursor:pointer;font-family:var(--mono);font-size:9px;color:var(--muted)"
-              onclick="openNotes()">NOTES</span>
+        <button class="text-btn" style="font-family:var(--mono);font-size:9px;color:var(--muted)"
+              onclick="openBrain()">+ BRAIN</button>
+        <button class="text-btn" style="font-family:var(--mono);font-size:9px;color:var(--muted)"
+              onclick="openNotes()">NOTES</button>
         <span id="chat-head-count" style="font-family:var(--mono);font-size:9px;color:var(--red2)">0 msgs</span>
       </div>
     </div>
@@ -1046,11 +1055,11 @@ function renderTasksSidebar() {
     return;
   }
   el.innerHTML = tasks.slice(0, 6).map(t => `
-    <div class="task-item" onclick="completeTask(${t.id})">
+    <button class="task-item" style="border:none;background:none;width:100%;text-align:left;" onclick="completeTask(${t.id})">
       <div class="task-dot ${t.priority === 'high' ? 'high' : t.priority === 'low' ? 'low' : ''}"></div>
       <span class="task-title">${esc(t.title)}</span>
       <span class="task-due">${t.due || ""}</span>
-    </div>`).join("");
+    </button>`).join("");
 }
 
 async function completeTask(id) {
@@ -1077,16 +1086,16 @@ document.getElementById("modal-bg").addEventListener("click", e => {
 function openTasks() {
   const rows = tasks.length
     ? tasks.map(t => `
-        <div class="task-item" onclick="completeTask(${t.id});closeModal()">
+        <button class="task-item" style="border:none;background:none;width:100%;text-align:left;" onclick="completeTask(${t.id});closeModal()">
           <div class="task-dot ${t.priority === 'high' ? 'high' : ''}"></div>
           <div class="task-title">${esc(t.title)}</div>
           <span class="task-due">${t.due||""}</span>
-        </div>`).join("")
+        </button>`).join("")
     : `<div class="dr-key" style="padding:10px;font-family:var(--mono)">No tasks.</div>`;
   openModal("// TASK QUEUE", `
     <div class="m-form">
-      <input class="m-input" id="new-task-title" placeholder="New task…">
-      <input class="m-input" style="max-width:120px" id="new-task-due" placeholder="Due (e.g. tomorrow)">
+      <input class="m-input" id="new-task-title" aria-label="New task title" placeholder="New task…">
+      <input class="m-input" style="max-width:120px" id="new-task-due" aria-label="New task due date" placeholder="Due (e.g. tomorrow)">
       <button class="m-btn" onclick="addTask()">ADD</button>
     </div>
     <div>${rows}</div>
@@ -1113,9 +1122,9 @@ function openBrain() {
       Drop text below to store it in EDITH's long-term memory.
       Files: drop them in data/second_brain/ folder.
     </div>
-    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…"></textarea>
+    <textarea class="m-textarea" id="brain-text" aria-label="Text to store in brain" placeholder="Paste notes, facts, research, anything…"></textarea>
     <div style="display:flex;gap:8px">
-      <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px">
+      <input class="m-input" id="brain-src" aria-label="Source label" placeholder="Source label (optional)" style="max-width:200px">
       <button class="m-btn" onclick="ingestBrain()">STORE IN BRAIN</button>
     </div>
   `);
