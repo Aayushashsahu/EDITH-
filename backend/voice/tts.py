@@ -10,6 +10,7 @@ from config.config import TTS_ENGINE, PIPER_BIN, PIPER_MODEL
 class TTSEngine:
     def __init__(self):
         self._pyttsx = None
+        self._kokoro_pipe = None  # ⚡ Bolt: Cache KPipeline to avoid heavy re-instantiation
         print(f"  [TTS]    Engine: {TTS_ENGINE}")
 
     def speak(self, text: str):
@@ -50,8 +51,10 @@ class TTSEngine:
         try:
             from kokoro import KPipeline
             import sounddevice as sd
-            pipe = KPipeline(lang_code="a")
-            for _, _, audio in pipe(text, voice="af_heart"):
+            # ⚡ Bolt: Lazy-load and cache the pipeline to drastically reduce latency on subsequent calls
+            if self._kokoro_pipe is None:
+                self._kokoro_pipe = KPipeline(lang_code="a")
+            for _, _, audio in self._kokoro_pipe(text, voice="af_heart"):
                 sd.play(audio, 24000); sd.wait()
         except Exception:
             self._pyttsx3(text)
