@@ -1,3 +1,6 @@
 ## 2025-05-22 - Keyboard Accessible Interaction Areas
 **Learning:** Custom visual interaction areas (like the "orb" voice toggle) created with generic `<div>` tags require manual implementation of keyboard accessibility (e.g., `role="button"`, `tabindex="0"`, and `onkeydown` handlers for 'Enter' and 'Space') to be usable by non-mouse users.
 **Action:** Always verify that interactive elements not using semantic HTML (like `<button>`) have appropriate ARIA roles, tabindex, and keyboard event handlers.
+## 2025-05-23 - Keyboard Accessibility for Non-Semantic Buttons
+**Learning:** Found several inline interaction components (`<span>`, `<div>`) using only `onclick` events for actions like "+ ADD", "+ BRAIN", and "NOTES". Custom CSS constraints prohibited replacing them with native `<button>` tags without breaking visual layouts due to default browser styling. Achieving keyboard accessibility requires safely augmenting existing tags with `role="button"`, `tabindex="0"`, and `onkeydown` event handlers (for 'Enter' and 'Space') to prevent layout breakage while fixing accessibility.
+**Action:** When a UI constraint prevents migrating generic non-semantic elements to native `<button>` or `<a>` tags, consistently apply ARIA `role`, `tabindex`, and explicit keyboard event listeners.
