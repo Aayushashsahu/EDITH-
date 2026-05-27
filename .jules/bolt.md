@@ -1,0 +1,7 @@
+## 2024-05-27 - Caching aiohttp.ClientSession in LLMClient
+**Learning:** The `LLMClient` was creating a new `aiohttp.ClientSession` on every API call (e.g., `generate`, `embed`, `is_alive`, `list_models`). While standard Python requests would close the connection each time, async workflows using `aiohttp` highly benefit from reusing a single `ClientSession` instance. Creating a new session on every request prevents HTTP keep-alive connection pooling, adding significant overhead per request due to repeated TCP handshakes.
+**Action:** Reused a single `aiohttp.ClientSession` across all method calls inside `LLMClient` by initializing it defensively via `_get_session()`.
+
+## 2024-05-27 - Batching and Concurrency for Local Ollama Embeddings
+**Learning:** The `SecondBrain._embed_all` method previously performed sequential HTTP requests for embedding chunks one by one (`[await self.llm.embed(t) for t in texts]`). This is extremely slow for a large number of chunks. However, gathering all chunks concurrently using `asyncio.gather` for local `ollama` embedding calls can overwhelm local resources. Batching these requests provides a massive speed up (from O(N) sequential to a fraction) without hitting system limits.
+**Action:** Replaced the sequential list comprehension in `SecondBrain._embed_all` with an `asyncio.gather` bounded by a small batch size (e.g., 5-10 chunks per batch), extending the results list to merge concurrent batch responses efficiently.
