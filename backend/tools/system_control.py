@@ -92,8 +92,11 @@ class SystemControl:
 
     def open_app(self, app: str) -> str:
         key = re.sub(r"\s+", "", app.lower())
-        cmd = self._APPS.get(key, f"start {app}")
-        _cmd(cmd)
+        if key in self._APPS:
+            _cmd(self._APPS[key])
+        else:
+            safe_app = app.replace("'", "''")
+            _ps(f"Start-Process '{safe_app}'")
         return f"Opening {app}."
 
     def close_app(self, app: str) -> str:

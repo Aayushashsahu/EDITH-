@@ -1,0 +1,4 @@
+## 2026-05-30 - Prevent CMD Injection in Windows App Execution
+**Vulnerability:** Untrusted user input was passed directly into `cmd.exe /c start {app}` without escaping or parameterization, allowing arbitrary command execution on the host machine.
+**Learning:** Functions communicating with Windows via `subprocess.run([WIN_CMD, "/c", ...])` are inherently vulnerable if input is string-interpolated. The codebase design pattern of having a dictionary of safe commands (`_APPS`) but defaulting to `start {app}` exposes a shell injection risk via the command line fallback.
+**Prevention:** For untrusted input targeting external system processes from WSL to Windows, use the PowerShell bridge (`_ps`) instead of CMD (`_cmd`), executing `Start-Process` with single-quoted arguments where internal single quotes are escaped (`replace("'", "''")`), ensuring it evaluates strictly as literal strings.
