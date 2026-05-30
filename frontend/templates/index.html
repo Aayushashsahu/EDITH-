@@ -1066,14 +1066,24 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+  const firstInput = document.getElementById("modal-body").querySelector("input, textarea");
+  if (firstInput) firstInput.focus();
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  const cmdIn = document.getElementById("cmd-in");
+  if (cmdIn) cmdIn.focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.getElementById("modal-bg").classList.contains("open")) {
+    closeModal();
+  }
 });
 
 function openTasks() {
@@ -1087,8 +1097,8 @@ function openTasks() {
     : `<div class="dr-key" style="padding:10px;font-family:var(--mono)">No tasks.</div>`;
   openModal("// TASK QUEUE", `
     <div class="m-form">
-      <input class="m-input" id="new-task-title" placeholder="New task…">
-      <input class="m-input" style="max-width:120px" id="new-task-due" placeholder="Due (e.g. tomorrow)">
+      <input class="m-input" id="new-task-title" placeholder="New task…" aria-label="Task title" onkeydown="if(event.key === 'Enter') addTask()">
+      <input class="m-input" style="max-width:120px" id="new-task-due" placeholder="Due (e.g. tomorrow)" aria-label="Task due date" onkeydown="if(event.key === 'Enter') addTask()">
       <button class="m-btn" onclick="addTask()">ADD</button>
     </div>
     <div>${rows}</div>
@@ -1115,9 +1125,9 @@ function openBrain() {
       Drop text below to store it in EDITH's long-term memory.
       Files: drop them in data/second_brain/ folder.
     </div>
-    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…"></textarea>
+    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…" aria-label="Content to ingest"></textarea>
     <div style="display:flex;gap:8px">
-      <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px">
+      <input class="m-input" id="brain-src" placeholder="Source label (optional)" aria-label="Source label" style="max-width:200px" onkeydown="if(event.key === 'Enter') ingestBrain()">
       <button class="m-btn" onclick="ingestBrain()">STORE IN BRAIN</button>
     </div>
   `);
