@@ -660,7 +660,7 @@ body::after {
     <div class="sep"></div>
     <div class="section-label" style="display:flex;justify-content:space-between;width:100%">
       <span>// TASKS</span>
-      <span style="cursor:pointer;color:var(--gold)" onclick="openTasks()">+ ADD</span>
+      <span style="cursor:pointer;color:var(--gold)" role="button" tabindex="0" aria-label="Add a new task" onclick="openTasks()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openTasks(); }">+ ADD</span>
     </div>
     <div class="task-list" id="task-list">
       <div class="dr-key" style="font-family:var(--mono);font-size:10px;padding:6px">Loading…</div>
@@ -696,9 +696,11 @@ body::after {
       <span id="chat-head-label">// COMMS LOG</span>
       <div style="display:flex;gap:8px;align-items:center">
         <span style="cursor:pointer;font-family:var(--mono);font-size:9px;color:var(--muted)"
-              onclick="openBrain()">+ BRAIN</span>
+              role="button" tabindex="0" aria-label="Ingest data to Brain"
+              onclick="openBrain()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openBrain(); }">+ BRAIN</span>
         <span style="cursor:pointer;font-family:var(--mono);font-size:9px;color:var(--muted)"
-              onclick="openNotes()">NOTES</span>
+              role="button" tabindex="0" aria-label="Open notes"
+              onclick="openNotes()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openNotes(); }">NOTES</span>
         <span id="chat-head-count" style="font-family:var(--mono);font-size:9px;color:var(--red2)">0 msgs</span>
       </div>
     </div>
@@ -1046,7 +1048,7 @@ function renderTasksSidebar() {
     return;
   }
   el.innerHTML = tasks.slice(0, 6).map(t => `
-    <div class="task-item" onclick="completeTask(${t.id})">
+    <div class="task-item" role="button" tabindex="0" aria-label="Complete task: ${esc(t.title)}" onclick="completeTask(${t.id})" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); completeTask(${t.id}); }">
       <div class="task-dot ${t.priority === 'high' ? 'high' : t.priority === 'low' ? 'low' : ''}"></div>
       <span class="task-title">${esc(t.title)}</span>
       <span class="task-due">${t.due || ""}</span>
@@ -1077,7 +1079,7 @@ document.getElementById("modal-bg").addEventListener("click", e => {
 function openTasks() {
   const rows = tasks.length
     ? tasks.map(t => `
-        <div class="task-item" onclick="completeTask(${t.id});closeModal()">
+        <div class="task-item" role="button" tabindex="0" aria-label="Complete task: ${esc(t.title)}" onclick="completeTask(${t.id});closeModal()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); completeTask(${t.id}); closeModal(); }">
           <div class="task-dot ${t.priority === 'high' ? 'high' : ''}"></div>
           <div class="task-title">${esc(t.title)}</div>
           <span class="task-due">${t.due||""}</span>
