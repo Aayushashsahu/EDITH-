@@ -1062,18 +1062,39 @@ async function completeTask(id) {
 }
 
 // ── Modals ─────────────────────────────────────────────────────────────────
+let lastFocusedElement = null;
+
 function openModal(title, bodyHTML) {
+  lastFocusedElement = document.activeElement;
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+
+  setTimeout(() => {
+    const firstInput = document.querySelector('#modal-body input, #modal-body textarea');
+    if (firstInput) {
+      firstInput.focus();
+    }
+  }, 10);
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+    lastFocusedElement.focus();
+  } else {
+    document.getElementById("cmd-in")?.focus();
+  }
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.getElementById("modal-bg").classList.contains("open")) {
+    closeModal();
+  }
 });
 
 function openTasks() {
@@ -1086,7 +1107,7 @@ function openTasks() {
         </div>`).join("")
     : `<div class="dr-key" style="padding:10px;font-family:var(--mono)">No tasks.</div>`;
   openModal("// TASK QUEUE", `
-    <div class="m-form">
+    <div class="m-form" onkeydown="if(event.key === 'Enter') addTask()">
       <input class="m-input" id="new-task-title" placeholder="New task…">
       <input class="m-input" style="max-width:120px" id="new-task-due" placeholder="Due (e.g. tomorrow)">
       <button class="m-btn" onclick="addTask()">ADD</button>
@@ -1115,8 +1136,8 @@ function openBrain() {
       Drop text below to store it in EDITH's long-term memory.
       Files: drop them in data/second_brain/ folder.
     </div>
-    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…"></textarea>
-    <div style="display:flex;gap:8px">
+    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…" onkeydown="if((event.ctrlKey || event.metaKey) && event.key === 'Enter') ingestBrain()"></textarea>
+    <div style="display:flex;gap:8px" onkeydown="if(event.key === 'Enter') ingestBrain()">
       <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px">
       <button class="m-btn" onclick="ingestBrain()">STORE IN BRAIN</button>
     </div>
