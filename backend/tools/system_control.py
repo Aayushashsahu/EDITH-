@@ -106,33 +106,10 @@ class SystemControl:
         return f"Closed {killed} instance(s) of {app}." if killed else f"{app} not found."
 
     def open_url(self, url: str) -> str:
-        import urllib.parse
-        if not url.startswith(("http://", "https://")):
+        if not url.startswith("http"):
             url = "https://" + url
-
-        try:
-            parsed = urllib.parse.urlparse(url)
-            if parsed.scheme not in ("http", "https"):
-                return "Invalid URL scheme. Only http and https are allowed."
-
-            safe_url = urllib.parse.urlunparse((
-                parsed.scheme,
-                parsed.netloc,
-                parsed.path,
-                parsed.params,
-                parsed.query,
-                parsed.fragment
-            ))
-
-            # Using _ps() safely opens URLs on Windows bypassing cmd.exe shell interpolation.
-            # We must ensure powershell doesn't evaluate the string either.
-            # Let's escape single quotes since we pass it to powershell in single quotes.
-            safe_url_ps = safe_url.replace("'", "''")
-
-            _ps(f"Start-Process '{safe_url_ps}'")
-            return f"Opened {safe_url}."
-        except Exception as e:
-            return f"Error opening URL: {e}"
+        _cmd(f"start {url}")
+        return f"Opened {url}."
 
     # ── Power ─────────────────────────────────────────────────────────────────
     def lock(self)     -> str: _cmd("rundll32.exe user32.dll,LockWorkStation"); return "Screen locked."
