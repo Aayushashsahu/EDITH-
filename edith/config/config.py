@@ -46,12 +46,6 @@ PIPER_MODEL      = str(TTS_MODEL_DIR / "en_US-lessac-medium.onnx")
 HOST             = "0.0.0.0"
 PORT             = 8888
 WS_PATH          = "/ws"
-ALLOWED_ORIGINS  = [
-    "http://localhost",
-    "http://localhost:8888",
-    "http://127.0.0.1",
-    "http://127.0.0.1:8888",
-]
 
 # ── RAG ───────────────────────────────────────────────────────────────────────
 CHUNK_SIZE       = 400

@@ -15,8 +15,6 @@ mock_config.PORT = 8888
 mock_config.SYSTEM_NAME = "TEST"
 mock_config.SYSTEM_VERSION = "1.0"
 mock_config.HOST = "127.0.0.1"
-mock_config.API_KEY = ""
-mock_config.ALLOWED_ORIGINS = ["*"]
 mock_config.BASE_DIR = Path(__file__).parent / "mock_base_dir"
 mock_config.TASKS_DB = Path(__file__).parent / "mock_base_dir" / "tasks.db"
 os.makedirs(mock_config.BASE_DIR / "frontend" / "static", exist_ok=True)
@@ -102,8 +100,7 @@ class TestMainEndpoints(unittest.TestCase):
         mock_tm_instance.complete.assert_called_once_with(1)
 
     def test_ingest_success(self):
-        async def mock_ingest_text(text, source): return 5
-        main_module.orc.brain.ingest_text = MagicMock(side_effect=mock_ingest_text)
+        main_module.orc.brain.ingest_text.return_value = 5
         response = self.client.post("/api/ingest", json={"text": "some new info", "source": "test"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["chunks"], 5)

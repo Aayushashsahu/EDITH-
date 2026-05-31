@@ -3,17 +3,13 @@ E.D.I.T.H. V8 — TTS Engine
 Priority: Piper (neural, offline) → Kokoro → pyttsx3 (fallback)
 """
 
-import asyncio
-import os
-import re
-import subprocess
+import asyncio, os, re, subprocess, tempfile
 from config.config import TTS_ENGINE, PIPER_BIN, PIPER_MODEL
 
 
 class TTSEngine:
     def __init__(self):
         self._pyttsx = None
-        self._kokoro_pipe = None
         print(f"  [TTS]    Engine: {TTS_ENGINE}")
 
     def speak(self, text: str):
@@ -54,12 +50,9 @@ class TTSEngine:
         try:
             from kokoro import KPipeline
             import sounddevice as sd
-            # Cache the ML pipeline to avoid expensive re-instantiation on every call
-            if self._kokoro_pipe is None:
-                self._kokoro_pipe = KPipeline(lang_code="a")
-            for _, _, audio in self._kokoro_pipe(text, voice="af_heart"):
-                sd.play(audio, 24000)
-                sd.wait()
+            pipe = KPipeline(lang_code="a")
+            for _, _, audio in pipe(text, voice="af_heart"):
+                sd.play(audio, 24000); sd.wait()
         except Exception:
             self._pyttsx3(text)
 

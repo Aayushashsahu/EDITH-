@@ -19,7 +19,7 @@ from backend.memory.store import MemoryStore
 from backend.memory.brain import SecondBrain
 from backend.voice.tts import TTSEngine
 from backend.automations.scheduler import setup as setup_sched
-from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY, ALLOWED_ORIGINS
+from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY
 
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -36,7 +36,7 @@ async def verify_api_key(request: Request, api_key_header: str = Security(api_ke
 
 app = FastAPI(title=f"{SYSTEM_NAME} {SYSTEM_VERSION}", dependencies=[Depends(verify_api_key)])
 
-app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "frontend" / "static")), name="static")
 
 # ── Shared state ──────────────────────────────────────────────────────────────
