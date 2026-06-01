@@ -4,7 +4,12 @@ Full Windows control from WSL via cmd.exe / PowerShell bridge.
 Also handles WSL-side file ops, shell commands, processes.
 """
 
-import os, re, subprocess, datetime, socket, psutil
+import os
+import re
+import subprocess
+import datetime
+import socket
+import psutil
 from pathlib import Path
 from config.config import WIN_CMD, WIN_PS, WIN_USER, NOTES_FILE
 
@@ -92,12 +97,16 @@ class SystemControl:
 
     def open_app(self, app: str) -> str:
         key = re.sub(r"\s+", "", app.lower())
-        cmd = self._APPS.get(key, f"start {app}")
-        _cmd(cmd)
+        if key in self._APPS:
+            _cmd(self._APPS[key])
+        else:
+            safe_app = app.replace("'", "''")
+            _ps(f"Start-Process '{safe_app}'")
         return f"Opening {app}."
 
     def close_app(self, app: str) -> str:
-        out = _cmd(f"taskkill /F /IM {app}.exe 2>&1")
+        safe_app = app.replace("'", "''")
+        out = _ps(f"taskkill /F /IM '{safe_app}.exe' 2>&1")
         if "SUCCESS" in out or "terminated" in out.lower():
             return f"Closed {app}."
         # fallback to psutil
@@ -145,7 +154,7 @@ class SystemControl:
         pct = max(0, min(100, pct))
         out = _cmd(f"nircmd setsysvolume {int(pct*655.35)}")
         if "not recognized" in out.lower():
-            return f"Install nircmd for volume control. (https://www.nirsoft.net/utils/nircmd.html)"
+            return "Install nircmd for volume control. (https://www.nirsoft.net/utils/nircmd.html)"
         return f"Volume set to {pct}%."
 
     def mute(self) -> str:
