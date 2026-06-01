@@ -1064,16 +1064,48 @@ async function completeTask(id) {
 // ── Modals ─────────────────────────────────────────────────────────────────
 function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
-  document.getElementById("modal-body").innerHTML    = bodyHTML;
+  const mbody = document.getElementById("modal-body");
+  mbody.innerHTML = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+
+  // Focus the first input/textarea automatically
+  setTimeout(() => {
+    const firstInput = mbody.querySelector("input, textarea");
+    if (firstInput) firstInput.focus();
+  }, 50);
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  // Restore focus to main command bar
+  const cmdIn = document.getElementById("cmd-in");
+  if (cmdIn) cmdIn.focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.getElementById("modal-bg").classList.contains("open")) {
+    closeModal();
+  }
+});
+
+document.getElementById("modal-body").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    // Submit on Enter for INPUT, but require Ctrl/Meta+Enter for TEXTAREA to allow newlines
+    const isInput = e.target.tagName === "INPUT";
+    const isTextareaSubmit = e.target.tagName === "TEXTAREA" && (e.ctrlKey || e.metaKey);
+
+    if (isInput || isTextareaSubmit) {
+      const primaryBtn = document.getElementById("modal-body").querySelector(".m-btn");
+      if (primaryBtn) {
+        e.preventDefault();
+        primaryBtn.click();
+      }
+    }
+  }
 });
 
 function openTasks() {
