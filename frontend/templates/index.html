@@ -1066,14 +1066,40 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+  const firstInput = document.querySelector("#modal-body input, #modal-body textarea");
+  if (firstInput) {
+    setTimeout(() => firstInput.focus(), 50);
+  }
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  const cmdIn = document.getElementById("cmd-in");
+  if (cmdIn) cmdIn.focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  const modalBg = document.getElementById("modal-bg");
+  if (modalBg && modalBg.classList.contains("open") && e.key === "Escape") {
+    closeModal();
+  }
+});
+
+document.getElementById("modal-body").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    if (e.target.tagName === "TEXTAREA" && !e.ctrlKey && !e.metaKey) {
+      return;
+    }
+    const btn = document.querySelector("#modal-body .m-btn");
+    if (btn) {
+      e.preventDefault();
+      btn.click();
+    }
+  }
 });
 
 function openTasks() {
