@@ -1063,14 +1063,40 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+  requestAnimationFrame(() => {
+    const firstInput = document.querySelector('#modal-body input, #modal-body textarea');
+    if (firstInput) firstInput.focus();
+  });
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  requestAnimationFrame(() => {
+    const cmdIn = document.getElementById("cmd-in");
+    if (cmdIn) cmdIn.focus();
+  });
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  const modalBg = document.getElementById("modal-bg");
+  if (!modalBg.classList.contains("open")) return;
+
+  if (e.key === "Escape") {
+    closeModal();
+  } else if (e.key === "Enter") {
+    const active = document.activeElement;
+    if (active.tagName === "TEXTAREA" && !(e.ctrlKey || e.metaKey)) return;
+    if (active.tagName === "BUTTON" || active.tagName === "A") return;
+    const btn = document.querySelector("#modal-body .m-btn");
+    if (btn) {
+      e.preventDefault();
+      btn.click();
+    }
+  }
 });
 
 function openTasks() {
