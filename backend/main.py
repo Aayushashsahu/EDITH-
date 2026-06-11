@@ -20,7 +20,7 @@ from backend.memory.brain import SecondBrain
 from backend.voice.tts import TTSEngine
 from backend.automations.scheduler import setup as setup_sched
 from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY, ALLOWED_ORIGINS
-
+import secrets
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -28,9 +28,10 @@ async def verify_api_key(request: Request, api_key_header: str = Security(api_ke
     if not API_KEY: return True
     if request.url.path == "/" or request.url.path.startswith("/static"):
         return True
-    if api_key_header == API_KEY:
+    if api_key_header is not None and secrets.compare_digest(api_key_header, API_KEY):
         return True
-    if request.query_params.get("api_key") == API_KEY:
+    query_key = request.query_params.get("api_key")
+    if query_key is not None and secrets.compare_digest(query_key, API_KEY):
         return True
     raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -83,7 +84,8 @@ async def shutdown():
 # ── WebSocket ─────────────────────────────────────────────────────────────────
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
-    if API_KEY and ws.query_params.get("api_key") != API_KEY:
+    query_key = ws.query_params.get("api_key")
+    if API_KEY and (query_key is None or not secrets.compare_digest(query_key, API_KEY)):
         await ws.close(code=1008)
         return
     await ws.accept()
