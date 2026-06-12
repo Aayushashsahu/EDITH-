@@ -3,7 +3,10 @@ E.D.I.T.H. V8 — Task Manager
 SQLite tasks with natural language due date parsing.
 """
 
-import sqlite3, datetime, os, re
+import sqlite3
+import datetime
+import os
+import re
 from config.config import TASKS_DB
 
 
