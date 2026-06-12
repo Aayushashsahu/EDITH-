@@ -4,7 +4,6 @@ E.D.I.T.H. V8 — Ollama async LLM + embedding client
 
 import aiohttp
 import asyncio
-import json
 from config.config import OLLAMA_URL, OLLAMA_TIMEOUT, MODEL_FAST, MODEL_EMBED
 
 

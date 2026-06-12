@@ -4,7 +4,11 @@ Whisper STT with wake word detection. Sends queries to backend via WebSocket.
 Run standalone: python -m backend.voice.listener
 """
 
-import asyncio, json, os, sys, tempfile
+import asyncio
+import json
+import os
+import sys
+import tempfile
 import websockets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))
 from config.config import WHISPER_MODEL, WAKE_WORD, LISTEN_SECONDS, SAMPLERATE, PORT
