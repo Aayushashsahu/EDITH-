@@ -1066,14 +1066,49 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+
+  // Focus the first interactive element or the close button
+  requestAnimationFrame(() => {
+    const modal = document.getElementById("modal-bg");
+    const firstInput = modal.querySelector('input, textarea');
+    if (firstInput) {
+      firstInput.focus();
+    } else {
+      document.getElementById("modal-close").focus();
+    }
+  });
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  // Restore focus to command bar
+  document.getElementById("cmd-in").focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  const modalBg = document.getElementById("modal-bg");
+  if (!modalBg.classList.contains("open")) return;
+
+  if (e.key === "Escape") {
+    closeModal();
+    return;
+  }
+
+  if (e.key === "Enter") {
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === "BUTTON" || activeEl.tagName === "A")) return;
+    if (activeEl && activeEl.tagName === "TEXTAREA" && !e.ctrlKey && !e.metaKey) return;
+
+    const primaryBtn = modalBg.querySelector('.m-btn');
+    if (primaryBtn) {
+      e.preventDefault();
+      primaryBtn.click();
+    }
+  }
 });
 
 function openTasks() {
