@@ -1066,14 +1066,54 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+
+  // Auto-focus first input or button for keyboard accessibility
+  requestAnimationFrame(() => {
+    const focusable = document.querySelector("#modal-body input, #modal-body textarea, #modal-body button");
+    if (focusable) focusable.focus();
+  });
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+
+  // Restore focus to main command bar
+  const cmdIn = document.getElementById("cmd-in");
+  if (cmdIn) cmdIn.focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+// Global keyboard handlers for modals
+document.addEventListener("keydown", e => {
+  const modalBg = document.getElementById("modal-bg");
+  if (!modalBg || !modalBg.classList.contains("open")) return;
+
+  // Escape to close
+  if (e.key === "Escape") {
+    closeModal();
+    return;
+  }
+
+  // Enter to submit form, avoiding textareas and native interactive elements
+  if (e.key === "Enter") {
+    const target = e.target;
+    if (target.tagName === "TEXTAREA" && !(e.ctrlKey || e.metaKey)) {
+      return; // Allow standard newlines in textareas unless Ctrl/Cmd is pressed
+    }
+    if (target.tagName === "BUTTON" || target.tagName === "A") {
+      return; // Let native elements handle their own Enter presses
+    }
+
+    // Find the primary action button and click it
+    const primaryBtn = document.querySelector("#modal-body button.m-btn");
+    if (primaryBtn) {
+      e.preventDefault();
+      primaryBtn.click();
+    }
+  }
 });
 
 function openTasks() {
