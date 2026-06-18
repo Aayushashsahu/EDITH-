@@ -22,15 +22,18 @@ from backend.automations.scheduler import setup as setup_sched
 from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY, ALLOWED_ORIGINS
 
 
+import secrets
+
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 async def verify_api_key(request: Request, api_key_header: str = Security(api_key_header)):
     if not API_KEY: return True
     if request.url.path == "/" or request.url.path.startswith("/static"):
         return True
-    if api_key_header == API_KEY:
+    if api_key_header and secrets.compare_digest(api_key_header, API_KEY):
         return True
-    if request.query_params.get("api_key") == API_KEY:
+    qp_api_key = request.query_params.get("api_key")
+    if qp_api_key and secrets.compare_digest(qp_api_key, API_KEY):
         return True
     raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -83,7 +86,8 @@ async def shutdown():
 # ── WebSocket ─────────────────────────────────────────────────────────────────
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
-    if API_KEY and ws.query_params.get("api_key") != API_KEY:
+    qp_api_key = ws.query_params.get("api_key")
+    if API_KEY and (not qp_api_key or not secrets.compare_digest(qp_api_key, API_KEY)):
         await ws.close(code=1008)
         return
     await ws.accept()
