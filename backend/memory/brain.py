@@ -88,7 +88,15 @@ class SecondBrain:
         return chunks
 
     async def _embed_all(self, texts: list) -> list:
-        return [await self.llm.embed(t) for t in texts]
+        # Use asyncio.gather in small batches (e.g., 5) to avoid overloading local system resources
+        # while preventing the severe performance bottleneck of sequential list comprehensions.
+        embeddings = []
+        batch_size = 5
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i:i+batch_size]
+            results = await asyncio.gather(*(self.llm.embed(t) for t in batch))
+            embeddings.extend(results)
+        return embeddings
 
     def _read_pdf(self, path: str) -> str:
         try:
