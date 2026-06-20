@@ -1,3 +1,6 @@
 ## 2024-05-18 - [Accessibility on Non-Semantic Elements]
 **Learning:** Adding `role="button"`, `tabindex="0"`, `aria-label`, and `onkeydown` handlers (for Enter and Space keys) effectively retrofits keyboard accessibility onto existing `<span>` and `<div>` elements with `onclick` handlers, improving UX without requiring structural HTML changes that might break layout or styling.
 **Action:** Always check for `onclick` attributes on non-semantic tags and apply this pattern if changing the tag to `<button>` is risky or unfeasible.
+## 2025-05-23 - Focus Lifecycle and Keyboard Events in Dynamically Generated Modals
+**Learning:** When modals inject content dynamically (like via `innerHTML`), auto-focusing elements requires using `requestAnimationFrame` so the DOM update is painted before `focus()` runs. Additionally, global `Enter` key handlers for modal submission must be careful to ignore native interactive elements (like currently focused buttons or links) and standard linebreaks in TextAreas unless modified with Ctrl/Meta.
+**Action:** Apply a complete focus lifecycle (focus inward on open, restore outward on close) and robust global keydown event scoping whenever implementing custom non-dialog modals.
