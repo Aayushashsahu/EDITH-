@@ -8,6 +8,7 @@ import asyncio, json, os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, Security, Request
+import secrets
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
@@ -28,10 +29,15 @@ async def verify_api_key(request: Request, api_key_header: str = Security(api_ke
     if not API_KEY: return True
     if request.url.path == "/" or request.url.path.startswith("/static"):
         return True
-    if api_key_header == API_KEY:
+
+    # Use secrets.compare_digest for constant-time comparison to prevent timing attacks
+    if api_key_header is not None and secrets.compare_digest(api_key_header, API_KEY):
         return True
-    if request.query_params.get("api_key") == API_KEY:
+
+    query_api_key = request.query_params.get("api_key")
+    if query_api_key is not None and secrets.compare_digest(query_api_key, API_KEY):
         return True
+
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 app = FastAPI(title=f"{SYSTEM_NAME} {SYSTEM_VERSION}", dependencies=[Depends(verify_api_key)])
