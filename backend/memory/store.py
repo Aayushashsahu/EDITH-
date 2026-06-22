@@ -3,7 +3,9 @@ E.D.I.T.H. V8 — SQLite conversation memory
 Persists across sessions, injects last N turns into every LLM prompt.
 """
 
-import sqlite3, datetime, os
+import sqlite3
+import datetime
+import os
 from config.config import MEMORY_DB, HISTORY_TURNS
 
 

@@ -6,7 +6,6 @@ import os
 # Adjust path to import adb_phone
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import importlib
 import edith.backend.integrations.adb_phone as adb_phone
 
 class TestADBPhoneSecurity(unittest.TestCase):
@@ -22,7 +21,7 @@ class TestADBPhoneSecurity(unittest.TestCase):
 
         # Call with a shell command
         cmd = "shell dumpsys telephony.registry | grep mCallState"
-        res = adb_phone._adb(cmd)
+        adb_phone._adb(cmd)
 
         # Verify shell=True is NOT passed (it's False by default)
         # Verify the arguments are a list
@@ -40,7 +39,7 @@ class TestADBPhoneSecurity(unittest.TestCase):
 
         # Call with a non-shell command
         cmd = "devices -l"
-        res = adb_phone._adb(cmd)
+        adb_phone._adb(cmd)
 
         mock_run.assert_called_once()
         args, kwargs = mock_run.call_args
