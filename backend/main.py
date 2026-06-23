@@ -5,6 +5,7 @@ Start: uvicorn backend.main:app --host 0.0.0.0 --port 8888 --reload
 """
 
 import asyncio, json, os, sys
+import secrets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, Security, Request
@@ -28,9 +29,10 @@ async def verify_api_key(request: Request, api_key_header: str = Security(api_ke
     if not API_KEY: return True
     if request.url.path == "/" or request.url.path.startswith("/static"):
         return True
-    if api_key_header == API_KEY:
+    if api_key_header is not None and secrets.compare_digest(api_key_header, API_KEY):
         return True
-    if request.query_params.get("api_key") == API_KEY:
+    query_api_key = request.query_params.get("api_key")
+    if query_api_key is not None and secrets.compare_digest(query_api_key, API_KEY):
         return True
     raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -83,9 +85,11 @@ async def shutdown():
 # ── WebSocket ─────────────────────────────────────────────────────────────────
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
-    if API_KEY and ws.query_params.get("api_key") != API_KEY:
-        await ws.close(code=1008)
-        return
+    if API_KEY:
+        query_api_key = ws.query_params.get("api_key")
+        if query_api_key is None or not secrets.compare_digest(query_api_key, API_KEY):
+            await ws.close(code=1008)
+            return
     await ws.accept()
     clients.append(ws)
     await ws.send_text(json.dumps({
