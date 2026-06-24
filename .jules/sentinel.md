@@ -2,3 +2,8 @@
 **Vulnerability:** Command injection vulnerability in WSL-to-Windows `_cmd` execution bridge when untrusted input (e.g., URLs) is passed to `WIN_CMD /c start {url}` without sanitization.
 **Learning:** `cmd.exe` easily executes injected commands (via `&` or `&&`), making naive string interpolation extremely dangerous when crossing the OS boundary from WSL to Windows.
 **Prevention:** Avoid `_cmd` for untrusted input. Instead, use the PowerShell bridge (`_ps`), enclose inputs strictly in single quotes, and escape any internal single quotes (`replace("'", "''")`) to ensure literal string evaluation.
+
+## 2024-06-24 - [Timing Attack via String Comparison]
+**Vulnerability:** Timing attack vulnerability in API key authentication where standard string equality operators (`==`) are used instead of constant-time string comparison functions.
+**Learning:** Checking string equality character-by-character can allow an attacker to infer the API key by measuring the time it takes for the application to respond. `secrets.compare_digest` requires null-checking since passing `None` raises a `TypeError`.
+**Prevention:** Use `secrets.compare_digest` for comparing sensitive strings, and defensively check for `None` values prior to comparing.
