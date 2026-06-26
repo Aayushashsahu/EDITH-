@@ -1066,14 +1066,45 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+  requestAnimationFrame(() => {
+    const firstInput = document.querySelector("#modal-body input, #modal-body textarea");
+    if (firstInput) {
+      firstInput.focus();
+    }
+  });
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  const cmdIn = document.getElementById("cmd-in");
+  if (cmdIn) cmdIn.focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.getElementById("modal-bg").classList.contains("open")) {
+    closeModal();
+  }
+});
+
+document.getElementById("modal").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    const active = document.activeElement;
+    if (active && (active.tagName === "BUTTON" || active.tagName === "A" || active.getAttribute("role") === "button")) {
+      return;
+    }
+    if (active && active.tagName === "TEXTAREA" && !e.ctrlKey && !e.metaKey) {
+      return;
+    }
+    e.preventDefault();
+    const firstBtn = document.querySelector("#modal-body button, #modal-body .m-btn");
+    if (firstBtn) {
+      firstBtn.click();
+    }
+  }
 });
 
 function openTasks() {
