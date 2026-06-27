@@ -1,8 +1,6 @@
 import sys
 import unittest
-import asyncio
 from unittest.mock import MagicMock, AsyncMock, patch
-import os
 
 class TestSecondBrain(unittest.IsolatedAsyncioTestCase):
     @classmethod
