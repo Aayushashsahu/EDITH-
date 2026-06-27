@@ -5,7 +5,6 @@ Drop files into data/second_brain/ and they auto-ingest on startup.
 """
 
 import os
-import asyncio
 from pathlib import Path
 import chromadb
 from backend.agents.llm import LLMClient
