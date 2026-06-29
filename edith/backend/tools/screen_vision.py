@@ -7,7 +7,6 @@ Uses LLaVA to understand what's on screen. Called when user says
 import asyncio
 import base64
 import os
-import subprocess
 import datetime
 import aiohttp
 from config.config import OLLAMA_URL, MODEL_VISION, OLLAMA_TIMEOUT, WIN_USER
