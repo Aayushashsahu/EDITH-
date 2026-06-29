@@ -4,7 +4,7 @@ Samsung Galaxy wireless ADB — call detection, answer/end, SMS.
 Enable ADB_ENABLED=True and set ADB_IP in config.
 """
 
-import asyncio, re, subprocess, os, sys
+import asyncio, re, subprocess, os, sys, shlex
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))
 from config.config import ADB_ENABLED, ADB_IP
 
@@ -13,8 +13,11 @@ def _adb(cmd: str) -> str:
     if not ADB_ENABLED:
         return "[ADB disabled]"
     try:
-        r = subprocess.run(f"adb -s {ADB_IP} {cmd}",
-                           shell=True, capture_output=True, text=True, timeout=10)
+        if cmd.startswith("shell "):
+            args = ["adb", "-s", str(ADB_IP), "shell", cmd[6:]]
+        else:
+            args = ["adb", "-s", str(ADB_IP)] + shlex.split(cmd)
+        r = subprocess.run(args, capture_output=True, text=True, timeout=10)
         return (r.stdout or r.stderr or "").strip()
     except Exception as e:
         return f"ADB error: {e}"
@@ -22,7 +25,7 @@ def _adb(cmd: str) -> str:
 
 class PhoneControl:
     def connect(self) -> str:
-        r = subprocess.run(f"adb connect {ADB_IP}", shell=True,
+        r = subprocess.run(["adb", "connect", str(ADB_IP)],
                            capture_output=True, text=True, timeout=10)
         return r.stdout.strip()
 
