@@ -6,7 +6,6 @@ import os
 # Adjust path to import adb_phone
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import importlib
 import edith.backend.integrations.adb_phone as adb_phone
 
 class TestADBPhoneSecurity(unittest.TestCase):
