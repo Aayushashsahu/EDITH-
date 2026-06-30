@@ -1,3 +1,6 @@
 ## 2024-05-18 - [Accessibility on Non-Semantic Elements]
 **Learning:** Adding `role="button"`, `tabindex="0"`, `aria-label`, and `onkeydown` handlers (for Enter and Space keys) effectively retrofits keyboard accessibility onto existing `<span>` and `<div>` elements with `onclick` handlers, improving UX without requiring structural HTML changes that might break layout or styling.
 **Action:** Always check for `onclick` attributes on non-semantic tags and apply this pattern if changing the tag to `<button>` is risky or unfeasible.
+## 2024-07-01 - Modal Keyboard Accessibility
+**Learning:** Monolithic vanilla JS frontends that use extensive `innerHTML` updates and manual DOM class toggling for modals can break native keyboard accessibility. Elements aren't reliably auto-focused, and standard dialog behaviors like Escape-to-close or Enter-to-submit require manual implementation.
+**Action:** Always implement a complete focus lifecycle (using `requestAnimationFrame` for reliable auto-focus on open, and explicit focus restoration on close) and add global keyboard event listeners to simulate native dialog interactions while respecting standard element behaviors (like allowing standard newlines in textareas without submitting).

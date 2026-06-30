@@ -1066,14 +1066,46 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+  requestAnimationFrame(() => {
+    const focusable = document.getElementById("modal-body").querySelector('input, textarea');
+    if (focusable) focusable.focus();
+  });
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  const cmdIn = document.getElementById("cmd-in");
+  if (cmdIn) cmdIn.focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  const modalBg = document.getElementById("modal-bg");
+  if (!modalBg || !modalBg.classList.contains("open")) return;
+  if (e.defaultPrevented) return;
+
+  if (e.key === "Escape") {
+    closeModal();
+    return;
+  }
+
+  if (e.key === "Enter") {
+    const active = document.activeElement;
+    if (active && (active.tagName === "BUTTON" || active.tagName === "A")) {
+      return; // Let normal button/link behavior handle Enter
+    }
+    if (active && active.tagName === "TEXTAREA") {
+      if (!(e.ctrlKey || e.metaKey)) return; // Require Ctrl+Enter / Meta+Enter for textareas
+    }
+    const btn = document.getElementById("modal-body").querySelector('.m-btn');
+    if (btn) {
+      e.preventDefault();
+      btn.click();
+    }
+  }
 });
 
 function openTasks() {
