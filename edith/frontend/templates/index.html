@@ -44,6 +44,19 @@ html, body {
   font-family: var(--sans);
 }
 
+/* ── Focus Styles ───────────────────────────────── */
+:focus-visible:not(input):not(textarea) {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+#orb-area:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
 /* ── Noise grain texture ────────────────────────── */
 body::before {
   content: '';
