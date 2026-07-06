@@ -1,3 +1,6 @@
 ## 2024-05-30 - Caching Kokoro KPipeline Instance
 **Learning:** Instantiating heavy ML pipelines like `KPipeline` on every method call introduces severe latency bottlenecks. Profiling the TTS engine revealed that this pattern severely degrades performance for repeated invocations in an application aiming for near-real-time responsiveness.
 **Action:** Implemented caching for the `KPipeline` object as a class attribute `self._kokoro_pipe` in `TTSEngine`. In the future, always inspect methods executing ML or deep-learning models to ensure the model instance is instantiated lazily once and reused.
+## 2024-12-05 - Batching Async Workloads
+**Learning:** List comprehensions containing `await` execute sequentially, creating severe latency bottlenecks.
+**Action:** Use `asyncio.gather` with chunking/batching (e.g., batch_size=5) for concurrent execution when handling I/O-bound tasks to prevent overloading the local system.
