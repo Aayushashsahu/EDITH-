@@ -44,6 +44,14 @@ html, body {
   font-family: var(--sans);
 }
 
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 /* ── Noise grain texture ────────────────────────── */
 body::before {
   content: '';
@@ -246,6 +254,11 @@ body::after {
   position: relative; width: 260px; height: 260px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+}
+#orb-area:focus-visible {
+  border-radius: 50%;
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
 }
 
 .orbit {
