@@ -3,7 +3,6 @@ E.D.I.T.H. V8 — Automations
 Morning briefing, evening wind-down, task nudges via APScheduler.
 """
 
-import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from config.config import BRIEFING_TIME, WIND_DOWN_TIME, NEWS_RSS, USER_NAME
 
