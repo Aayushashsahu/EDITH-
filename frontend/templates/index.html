@@ -1066,14 +1066,47 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+
+  // UX: Autofocus first input or textarea
+  requestAnimationFrame(() => {
+    const firstInput = document.querySelector('#modal-body input, #modal-body textarea');
+    if (firstInput) firstInput.focus();
+  });
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  // UX: Restore focus to main command input
+  document.getElementById("cmd-in").focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+// UX: Document-level modal keyboard controls
+document.addEventListener("keydown", e => {
+  const modalBg = document.getElementById("modal-bg");
+  if (!modalBg.classList.contains("open") || e.defaultPrevented) return;
+
+  if (e.key === "Escape") {
+    e.preventDefault();
+    closeModal();
+  } else if (e.key === "Enter") {
+    // Don't intercept if user is focused on a button or link
+    const active = document.activeElement;
+    if (active && (active.tagName === "BUTTON" || active.tagName === "A")) return;
+
+    // For textareas, require Ctrl+Enter or Meta+Enter to submit
+    if (active && active.tagName === "TEXTAREA" && !e.ctrlKey && !e.metaKey) return;
+
+    // Find primary action button
+    const primaryBtn = document.querySelector('#modal-body .m-btn');
+    if (primaryBtn) {
+      e.preventDefault();
+      primaryBtn.click();
+    }
+  }
 });
 
 function openTasks() {
