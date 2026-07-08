@@ -4,7 +4,12 @@ Full Windows control from WSL via cmd.exe / PowerShell bridge.
 Also handles WSL-side file ops, shell commands, processes.
 """
 
-import os, re, subprocess, datetime, socket, psutil
+import os
+import re
+import subprocess
+import datetime
+import socket
+import psutil
 from pathlib import Path
 from config.config import WIN_CMD, WIN_PS, WIN_USER, NOTES_FILE
 
@@ -145,7 +150,7 @@ class SystemControl:
         pct = max(0, min(100, pct))
         out = _cmd(f"nircmd setsysvolume {int(pct*655.35)}")
         if "not recognized" in out.lower():
-            return f"Install nircmd for volume control. (https://www.nirsoft.net/utils/nircmd.html)"
+            return "Install nircmd for volume control. (https://www.nirsoft.net/utils/nircmd.html)"
         return f"Volume set to {pct}%."
 
     def mute(self) -> str:

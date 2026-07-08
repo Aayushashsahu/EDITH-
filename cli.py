@@ -11,14 +11,13 @@ Usage:
 import asyncio
 import os
 import sys
-import json
 import datetime
 sys.path.insert(0, os.path.dirname(__file__))
 
 from backend.agents.orchestrator import Orchestrator
 from backend.memory.store import MemoryStore
 from backend.voice.tts import TTSEngine
-from config.config import SYSTEM_NAME, SYSTEM_VERSION, USER_NAME
+from config.config import USER_NAME
 
 # ── Colours ───────────────────────────────────────────────────────────────────
 G  = "\033[92m"
