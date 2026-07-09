@@ -1066,14 +1066,45 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+
+  requestAnimationFrame(() => {
+    const focusable = document.getElementById("modal-body").querySelector('input, textarea, .m-btn');
+    if (focusable) focusable.focus();
+  });
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  const cmdIn = document.getElementById("cmd-in");
+  if (cmdIn) cmdIn.focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  const modalBg = document.getElementById("modal-bg");
+  if (!modalBg || !modalBg.classList.contains("open")) return;
+
+  if (e.key === "Escape") {
+    closeModal();
+    return;
+  }
+
+  if (e.key === "Enter" && !e.defaultPrevented) {
+    if (document.activeElement && document.activeElement.tagName === "TEXTAREA" && !(e.ctrlKey || e.metaKey)) {
+        return;
+    }
+    if (document.activeElement && (document.activeElement.tagName === "BUTTON" || document.activeElement.tagName === "A")) {
+        return;
+    }
+    const primaryBtn = document.getElementById("modal-body").querySelector('.m-btn');
+    if (primaryBtn) {
+        e.preventDefault();
+        primaryBtn.click();
+    }
+  }
 });
 
 function openTasks() {
