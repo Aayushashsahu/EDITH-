@@ -13,10 +13,12 @@ def _adb(cmd: str) -> str:
     if not ADB_ENABLED:
         return "[ADB disabled]"
     try:
+        # Prevent command injection on the host by parsing the command.
+        # For remote piping in Android's shell, pass the entire remote command string as a single argument.
         if cmd.startswith("shell "):
-            args = ["adb", "-s", str(ADB_IP), "shell", cmd[6:]]
+            args = ["adb", "-s", ADB_IP, "shell", cmd[6:]]
         else:
-            args = ["adb", "-s", str(ADB_IP)] + shlex.split(cmd)
+            args = ["adb", "-s", ADB_IP] + shlex.split(cmd)
         r = subprocess.run(args, capture_output=True, text=True, timeout=10)
         return (r.stdout or r.stderr or "").strip()
     except Exception as e:
@@ -25,7 +27,7 @@ def _adb(cmd: str) -> str:
 
 class PhoneControl:
     def connect(self) -> str:
-        r = subprocess.run(["adb", "connect", str(ADB_IP)],
+        r = subprocess.run(["adb", "connect", ADB_IP],
                            capture_output=True, text=True, timeout=10)
         return r.stdout.strip()
 
