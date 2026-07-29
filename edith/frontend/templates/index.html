@@ -575,6 +575,13 @@ body::after {
   font-family: var(--sans); font-size: 12px; outline: none; margin-bottom: 8px;
 }
 .m-textarea::placeholder { color: var(--muted); }
+
+/* ── Accessibility / Focus ──────────────────────── */
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+#orb-area:focus-visible { border-radius: 50%; }
+.m-input:focus-visible, .m-textarea:focus-visible { outline-offset: -1px; }
+.task-item:focus-visible { outline-offset: -2px; }
+
 </style>
 </head>
 <body>
@@ -594,7 +601,7 @@ body::after {
   <div id="modal">
     <div id="modal-head">
       <span id="modal-title">TASKS</span>
-      <button id="modal-close" onclick="closeModal()">✕</button>
+      <button id="modal-close" onclick="closeModal()" aria-label="Close dialog">✕</button>
     </div>
     <div id="modal-body"></div>
   </div>
@@ -660,7 +667,7 @@ body::after {
     <div class="sep"></div>
     <div class="section-label" style="display:flex;justify-content:space-between;width:100%">
       <span>// TASKS</span>
-      <span style="cursor:pointer;color:var(--gold)" onclick="openTasks()">+ ADD</span>
+      <span style="cursor:pointer;color:var(--gold)" role="button" tabindex="0" aria-label="Add a new task" onclick="openTasks()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openTasks(); }">+ ADD</span>
     </div>
     <div class="task-list" id="task-list">
       <div class="dr-key" style="font-family:var(--mono);font-size:10px;padding:6px">Loading…</div>
@@ -669,7 +676,7 @@ body::after {
 
   <!-- ══ CORE — ORB ══════════════════════════════ -->
   <main id="core">
-    <div id="orb-area" onclick="toggleVoice()">
+    <div id="orb-area" role="button" tabindex="0" aria-label="Toggle voice command" onclick="toggleVoice()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleVoice(); }">
       <div class="orbit orbit-1"></div>
       <div class="orbit orbit-2"></div>
       <div class="orbit orbit-3"></div>
@@ -696,9 +703,11 @@ body::after {
       <span id="chat-head-label">// COMMS LOG</span>
       <div style="display:flex;gap:8px;align-items:center">
         <span style="cursor:pointer;font-family:var(--mono);font-size:9px;color:var(--muted)"
-              onclick="openBrain()">+ BRAIN</span>
+              role="button" tabindex="0" aria-label="Ingest data to Brain"
+              onclick="openBrain()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openBrain(); }">+ BRAIN</span>
         <span style="cursor:pointer;font-family:var(--mono);font-size:9px;color:var(--muted)"
-              onclick="openNotes()">NOTES</span>
+              role="button" tabindex="0" aria-label="Open notes"
+              onclick="openNotes()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openNotes(); }">NOTES</span>
         <span id="chat-head-count" style="font-family:var(--mono);font-size:9px;color:var(--red2)">0 msgs</span>
       </div>
     </div>
@@ -708,10 +717,11 @@ body::after {
   <!-- ══ FOOT — COMMAND BAR ═══════════════════════ -->
   <footer id="foot">
     <div id="cmd-box">
-      <span id="cmd-prefix">EDITH://</span>
+      <span id="cmd-prefix" aria-hidden="true">EDITH://</span>
       <input id="cmd-in" type="text"
+             aria-label="Command input"
              placeholder="Enter command or query…"
-             autocomplete="off" autocorrect="off" spellcheck="false">
+             autocomplete="off" autocorrect="off" spellcheck="false" autofocus>
     </div>
     <button class="hbtn" id="btn-voice" onclick="toggleVoice()">MIC</button>
     <button class="hbtn" onclick="openTasks()">TASKS</button>
@@ -1045,7 +1055,7 @@ function renderTasksSidebar() {
     return;
   }
   el.innerHTML = tasks.slice(0, 6).map(t => `
-    <div class="task-item" onclick="completeTask(${t.id})">
+    <div class="task-item" role="button" tabindex="0" aria-label="Complete task: ${esc(t.title)}" onclick="completeTask(${t.id})" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); completeTask(${t.id}); }">
       <div class="task-dot ${t.priority === 'high' ? 'high' : t.priority === 'low' ? 'low' : ''}"></div>
       <span class="task-title">${esc(t.title)}</span>
       <span class="task-due">${t.due || ""}</span>
@@ -1063,20 +1073,49 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+
+  // Accessibility: focus management
+  requestAnimationFrame(() => {
+    const focusable = document.getElementById("modal-body").querySelector("input, textarea, button");
+    if (focusable) focusable.focus();
+  });
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  // Restore focus to command input
+  document.getElementById("cmd-in").focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
 });
 
+document.addEventListener("keydown", e => {
+  if (e.defaultPrevented) return;
+  const modalOpen = document.getElementById("modal-bg").classList.contains("open");
+  if (!modalOpen) return;
+
+  if (e.key === "Escape") {
+    closeModal();
+    e.preventDefault();
+  } else if (e.key === "Enter") {
+    const active = document.activeElement;
+    if (active && (active.tagName === "BUTTON" || active.tagName === "A")) return;
+    if (active && active.tagName === "TEXTAREA" && !e.ctrlKey && !e.metaKey) return;
+
+    const primaryBtn = document.getElementById("modal-body").querySelector(".m-btn");
+    if (primaryBtn) {
+      primaryBtn.click();
+      e.preventDefault();
+    }
+  }
+});
+
 function openTasks() {
   const rows = tasks.length
     ? tasks.map(t => `
-        <div class="task-item" onclick="completeTask(${t.id});closeModal()">
+        <div class="task-item" role="button" tabindex="0" aria-label="Complete task: ${esc(t.title)}" onclick="completeTask(${t.id});closeModal()" onkeydown="if(event.key === 'Enter' || event.key === ' ') { event.preventDefault(); completeTask(${t.id}); closeModal(); }">
           <div class="task-dot ${t.priority === 'high' ? 'high' : ''}"></div>
           <div class="task-title">${esc(t.title)}</div>
           <span class="task-due">${t.due||""}</span>
@@ -1093,26 +1132,49 @@ function openTasks() {
 }
 
 async function addTask() {
-  const title = document.getElementById("new-task-title")?.value?.trim();
+  const titleInp = document.getElementById("new-task-title");
+  const title = titleInp?.value?.trim();
   const due   = document.getElementById("new-task-due")?.value?.trim();
-  if (!title) return;
-  await fetch("/api/tasks", {
-    method: "POST",
-    headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
-    body: JSON.stringify({ title, due, priority: "medium" })
-  });
-  await loadTasks();
-  closeModal();
-  toast("Task added", title);
+  if (!title) {
+    if (titleInp) {
+      titleInp.focus();
+      titleInp.style.borderColor = "var(--red2)";
+      setTimeout(() => titleInp.style.borderColor = "", 1000);
+    }
+    return;
+  }
+  const btn = document.querySelector("#modal-body .m-btn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "ADDING...";
+    btn.style.opacity = "0.5";
+  }
+  try {
+    await fetch("/api/tasks", {
+      method: "POST",
+      headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
+      body: JSON.stringify({ title, due, priority: "medium" })
+    });
+    await loadTasks();
+    closeModal();
+    toast("Task added", title);
+  } catch (err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "ADD";
+      btn.style.opacity = "1";
+    }
+    toast("Error", "Failed to add task.");
+  }
 }
 
 function openBrain() {
   openModal("// SECOND BRAIN — INGEST", `
     <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:12px;letter-spacing:.08em">
-      Drop text below to store it in EDITH's long-term memory.
+      Drop text below to store it in EDITH's long-term memory. (Ctrl+Enter ↵)
       Files: drop them in data/second_brain/ folder.
     </div>
-    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…"></textarea>
+    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…" onkeydown="if((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); ingestBrain(); }"></textarea>
     <div style="display:flex;gap:8px">
       <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px">
       <button class="m-btn" onclick="ingestBrain()">STORE IN BRAIN</button>
@@ -1121,17 +1183,40 @@ function openBrain() {
 }
 
 async function ingestBrain() {
-  const text   = document.getElementById("brain-text")?.value?.trim();
+  const textInp = document.getElementById("brain-text");
+  const text   = textInp?.value?.trim();
   const source = document.getElementById("brain-src")?.value?.trim() || "manual";
-  if (!text) return;
-  const r = await (await fetch("/api/ingest", {
-    method: "POST",
-    headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
-    body: JSON.stringify({ text, source })
-  })).json();
-  closeModal();
-  toast("Brain updated", `${r.chunks || "?"} chunks stored.`);
-  fetchStatus();
+  if (!text) {
+    if (textInp) {
+      textInp.focus();
+      textInp.style.borderColor = "var(--red2)";
+      setTimeout(() => textInp.style.borderColor = "", 1000);
+    }
+    return;
+  }
+  const btn = document.querySelector("#modal-body .m-btn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "STORING...";
+    btn.style.opacity = "0.5";
+  }
+  try {
+    const r = await (await fetch("/api/ingest", {
+      method: "POST",
+      headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
+      body: JSON.stringify({ text, source })
+    })).json();
+    closeModal();
+    toast("Brain updated", `${r.chunks || "?"} chunks stored.`);
+    fetchStatus();
+  } catch (err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "STORE IN BRAIN";
+      btn.style.opacity = "1";
+    }
+    toast("Error", "Failed to store in brain.");
+  }
 }
 
 async function openNotes() {
