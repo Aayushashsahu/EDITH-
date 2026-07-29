@@ -1132,26 +1132,49 @@ function openTasks() {
 }
 
 async function addTask() {
-  const title = document.getElementById("new-task-title")?.value?.trim();
+  const titleInp = document.getElementById("new-task-title");
+  const title = titleInp?.value?.trim();
   const due   = document.getElementById("new-task-due")?.value?.trim();
-  if (!title) return;
-  await fetch("/api/tasks", {
-    method: "POST",
-    headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
-    body: JSON.stringify({ title, due, priority: "medium" })
-  });
-  await loadTasks();
-  closeModal();
-  toast("Task added", title);
+  if (!title) {
+    if (titleInp) {
+      titleInp.focus();
+      titleInp.style.borderColor = "var(--red2)";
+      setTimeout(() => titleInp.style.borderColor = "", 1000);
+    }
+    return;
+  }
+  const btn = document.querySelector("#modal-body .m-btn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "ADDING...";
+    btn.style.opacity = "0.5";
+  }
+  try {
+    await fetch("/api/tasks", {
+      method: "POST",
+      headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
+      body: JSON.stringify({ title, due, priority: "medium" })
+    });
+    await loadTasks();
+    closeModal();
+    toast("Task added", title);
+  } catch (err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "ADD";
+      btn.style.opacity = "1";
+    }
+    toast("Error", "Failed to add task.");
+  }
 }
 
 function openBrain() {
   openModal("// SECOND BRAIN — INGEST", `
     <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:12px;letter-spacing:.08em">
-      Drop text below to store it in EDITH's long-term memory.
+      Drop text below to store it in EDITH's long-term memory. (Ctrl+Enter ↵)
       Files: drop them in data/second_brain/ folder.
     </div>
-    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…"></textarea>
+    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…" onkeydown="if((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); ingestBrain(); }"></textarea>
     <div style="display:flex;gap:8px">
       <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px">
       <button class="m-btn" onclick="ingestBrain()">STORE IN BRAIN</button>
@@ -1160,17 +1183,40 @@ function openBrain() {
 }
 
 async function ingestBrain() {
-  const text   = document.getElementById("brain-text")?.value?.trim();
+  const textInp = document.getElementById("brain-text");
+  const text   = textInp?.value?.trim();
   const source = document.getElementById("brain-src")?.value?.trim() || "manual";
-  if (!text) return;
-  const r = await (await fetch("/api/ingest", {
-    method: "POST",
-    headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
-    body: JSON.stringify({ text, source })
-  })).json();
-  closeModal();
-  toast("Brain updated", `${r.chunks || "?"} chunks stored.`);
-  fetchStatus();
+  if (!text) {
+    if (textInp) {
+      textInp.focus();
+      textInp.style.borderColor = "var(--red2)";
+      setTimeout(() => textInp.style.borderColor = "", 1000);
+    }
+    return;
+  }
+  const btn = document.querySelector("#modal-body .m-btn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "STORING...";
+    btn.style.opacity = "0.5";
+  }
+  try {
+    const r = await (await fetch("/api/ingest", {
+      method: "POST",
+      headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
+      body: JSON.stringify({ text, source })
+    })).json();
+    closeModal();
+    toast("Brain updated", `${r.chunks || "?"} chunks stored.`);
+    fetchStatus();
+  } catch (err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "STORE IN BRAIN";
+      btn.style.opacity = "1";
+    }
+    toast("Error", "Failed to store in brain.");
+  }
 }
 
 async function openNotes() {
