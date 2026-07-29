@@ -575,6 +575,13 @@ body::after {
   font-family: var(--sans); font-size: 12px; outline: none; margin-bottom: 8px;
 }
 .m-textarea::placeholder { color: var(--muted); }
+
+/* ── Accessibility / Focus ──────────────────────── */
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+#orb-area:focus-visible { border-radius: 50%; }
+.m-input:focus-visible, .m-textarea:focus-visible { outline-offset: -1px; }
+.task-item:focus-visible { outline-offset: -2px; }
+
 </style>
 </head>
 <body>
@@ -1066,14 +1073,43 @@ function openModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML    = bodyHTML;
   document.getElementById("modal-bg").classList.add("open");
+
+  // Accessibility: focus management
+  requestAnimationFrame(() => {
+    const focusable = document.getElementById("modal-body").querySelector("input, textarea, button");
+    if (focusable) focusable.focus();
+  });
 }
 
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  // Restore focus to command input
+  document.getElementById("cmd-in").focus();
 }
 
 document.getElementById("modal-bg").addEventListener("click", e => {
   if (e.target === document.getElementById("modal-bg")) closeModal();
+});
+
+document.addEventListener("keydown", e => {
+  if (e.defaultPrevented) return;
+  const modalOpen = document.getElementById("modal-bg").classList.contains("open");
+  if (!modalOpen) return;
+
+  if (e.key === "Escape") {
+    closeModal();
+    e.preventDefault();
+  } else if (e.key === "Enter") {
+    const active = document.activeElement;
+    if (active && (active.tagName === "BUTTON" || active.tagName === "A")) return;
+    if (active && active.tagName === "TEXTAREA" && !e.ctrlKey && !e.metaKey) return;
+
+    const primaryBtn = document.getElementById("modal-body").querySelector(".m-btn");
+    if (primaryBtn) {
+      primaryBtn.click();
+      e.preventDefault();
+    }
+  }
 });
 
 function openTasks() {
