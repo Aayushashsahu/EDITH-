@@ -1125,24 +1125,41 @@ function openTasks() {
     <div class="m-form">
       <input class="m-input" id="new-task-title" placeholder="New task…">
       <input class="m-input" style="max-width:120px" id="new-task-due" placeholder="Due (e.g. tomorrow)">
-      <button class="m-btn" onclick="addTask()">ADD</button>
+      <button class="m-btn" onclick="addTask(this)">ADD</button>
     </div>
     <div>${rows}</div>
   `);
 }
 
-async function addTask() {
+async function addTask(btn) {
   const title = document.getElementById("new-task-title")?.value?.trim();
   const due   = document.getElementById("new-task-due")?.value?.trim();
   if (!title) return;
-  await fetch("/api/tasks", {
-    method: "POST",
-    headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
-    body: JSON.stringify({ title, due, priority: "medium" })
-  });
-  await loadTasks();
-  closeModal();
-  toast("Task added", title);
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "ADDING...";
+    btn.style.opacity = "0.5";
+  }
+
+  try {
+    await fetch("/api/tasks", {
+      method: "POST",
+      headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
+      body: JSON.stringify({ title, due, priority: "medium" })
+    });
+    await loadTasks();
+    closeModal();
+    toast("Task added", title);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "ADD";
+      btn.style.opacity = "1";
+    }
+  }
 }
 
 function openBrain() {
@@ -1154,23 +1171,40 @@ function openBrain() {
     <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…"></textarea>
     <div style="display:flex;gap:8px">
       <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px">
-      <button class="m-btn" onclick="ingestBrain()">STORE IN BRAIN</button>
+      <button class="m-btn" onclick="ingestBrain(this)">STORE IN BRAIN</button>
     </div>
   `);
 }
 
-async function ingestBrain() {
+async function ingestBrain(btn) {
   const text   = document.getElementById("brain-text")?.value?.trim();
   const source = document.getElementById("brain-src")?.value?.trim() || "manual";
   if (!text) return;
-  const r = await (await fetch("/api/ingest", {
-    method: "POST",
-    headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
-    body: JSON.stringify({ text, source })
-  })).json();
-  closeModal();
-  toast("Brain updated", `${r.chunks || "?"} chunks stored.`);
-  fetchStatus();
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "STORING...";
+    btn.style.opacity = "0.5";
+  }
+
+  try {
+    const r = await (await fetch("/api/ingest", {
+      method: "POST",
+      headers: {"Content-Type":"application/json", "X-API-Key": API_KEY},
+      body: JSON.stringify({ text, source })
+    })).json();
+    closeModal();
+    toast("Brain updated", `${r.chunks || "?"} chunks stored.`);
+    fetchStatus();
+  } catch (e) {
+    console.error(e);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "STORE IN BRAIN";
+      btn.style.opacity = "1";
+    }
+  }
 }
 
 async function openNotes() {
