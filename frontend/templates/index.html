@@ -982,15 +982,16 @@ function drawBg() {
   // Hex dot grid (subtle)
   const hSize = 22, hW = hSize * Math.sqrt(3), hH = hSize * 1.5;
   bgx.fillStyle = "rgba(232,200,64,0.025)";
+  bgx.beginPath();
   for (let col = -1; col < W / hW + 2; col++) {
     for (let row = -1; row < H / hH + 2; row++) {
       const cx = col * hW + (row % 2 === 0 ? 0 : hW / 2);
       const cy = row * hH;
-      bgx.beginPath();
+      bgx.moveTo(cx + 1.5, cy);
       bgx.arc(cx, cy, 1.5, 0, Math.PI * 2);
-      bgx.fill();
     }
   }
+  bgx.fill();
 
   gScroll += 0.0025;
   requestAnimationFrame(drawBg);
