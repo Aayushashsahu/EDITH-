@@ -88,10 +88,8 @@ class SecondBrain:
         return chunks
 
     async def _embed_all(self, texts: list) -> list:
-        # Optimize embedding calls with chunked concurrency (batch size 5)
-        # to balance speed and local system resources.
-        batch_size = 5
         results = []
+        batch_size = 5
         for i in range(0, len(texts), batch_size):
             batch = texts[i:i + batch_size]
             batch_results = await asyncio.gather(*(self.llm.embed(t) for t in batch))
