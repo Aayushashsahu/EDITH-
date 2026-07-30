@@ -11,3 +11,8 @@
 **Vulnerability:** Standard equality operators (== and !=) were used to verify API keys in HTTP and WebSocket endpoints, making them susceptible to timing attacks.
 **Learning:** Using == to compare secrets leaks information about the secret's length and content, as it short-circuits upon the first mismatch.
 **Prevention:** Always use secrets.compare_digest (and ensure both inputs are strings, not None) when comparing secrets like API keys, tokens, or passwords.
+
+## 2024-05-24 - [Insufficient Escaping Allows Attribute XSS]
+**Vulnerability:** The frontend's vanilla JS `esc(s)` utility previously only encoded `<`, `>`, and `&`, meaning that any user-controlled input containing `"` or `'` could break out of HTML attributes when injected via template literals (e.g., `aria-label="Complete task: ${esc(t.title)}"`).
+**Learning:** In a vanilla DOM manipulation context where elements are heavily built via string interpolation/`innerHTML`, escaping just the tags is insufficient for properties within quotes.
+**Prevention:** Ensured the custom `esc()` function explicitly escapes double (`"`) and single (`'`) quotes, and forcefully casts inputs to `String()` to handle nulls or non-string inputs robustly.
