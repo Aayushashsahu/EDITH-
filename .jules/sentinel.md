@@ -11,3 +11,8 @@
 **Vulnerability:** Standard equality operators (== and !=) were used to verify API keys in HTTP and WebSocket endpoints, making them susceptible to timing attacks.
 **Learning:** Using == to compare secrets leaks information about the secret's length and content, as it short-circuits upon the first mismatch.
 **Prevention:** Always use secrets.compare_digest (and ensure both inputs are strings, not None) when comparing secrets like API keys, tokens, or passwords.
+
+## 2024-05-24 - [Prevent Attribute-Based XSS in innerHTML Templates]
+**Vulnerability:** The custom `esc()` function used for escaping text before injecting it via `innerHTML` only escaped HTML tags (`<`, `>`, `&`), failing to escape quotes (`"`, `'`). This allowed attribute-based XSS when user input was embedded within HTML attributes using template literals.
+**Learning:** Escaping only tags is insufficient when rendering dynamic HTML. If an attacker inputs a string with a quote followed by a payload (e.g., `" onmouseover="alert(1)`), it can break out of an attribute and execute arbitrary JavaScript.
+**Prevention:** Ensure any escaping utility also handles double quotes (`"`) and single quotes (`'`), converting them to their HTML entity equivalents (`&quot;`, `&#39;`) before insertion into the DOM.
