@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head><title>Canvas test</title></head>
+<body>
+<canvas id="bg-canvas" width="1024" height="768"></canvas>
+<script>
+  const bgc = document.getElementById("bg-canvas");
+  const bgx = bgc.getContext("2d");
+  let gScroll = 0;
+
+  function drawBgOld() {
+    const W = bgc.width, H = bgc.height;
+    // Hex dot grid (subtle)
+    const hSize = 22, hW = hSize * Math.sqrt(3), hH = hSize * 1.5;
+    bgx.fillStyle = "rgba(232,200,64,0.025)";
+    for (let col = -1; col < W / hW + 2; col++) {
+      for (let row = -1; row < H / hH + 2; row++) {
+        const cx = col * hW + (row % 2 === 0 ? 0 : hW / 2);
+        const cy = row * hH;
+        bgx.beginPath();
+        bgx.arc(cx, cy, 1.5, 0, Math.PI * 2);
+        bgx.fill();
+      }
+    }
+  }
+
+  function drawBgNew() {
+    const W = bgc.width, H = bgc.height;
+    // Hex dot grid (subtle)
+    const hSize = 22, hW = hSize * Math.sqrt(3), hH = hSize * 1.5;
+    bgx.fillStyle = "rgba(232,200,64,0.025)";
+    bgx.beginPath();
+    for (let col = -1; col < W / hW + 2; col++) {
+      for (let row = -1; row < H / hH + 2; row++) {
+        const cx = col * hW + (row % 2 === 0 ? 0 : hW / 2);
+        const cy = row * hH;
+        bgx.moveTo(cx + 1.5, cy);
+        bgx.arc(cx, cy, 1.5, 0, Math.PI * 2);
+      }
+    }
+    bgx.fill();
+  }
+
+  console.time('old');
+  for (let i = 0; i < 100; i++) drawBgOld();
+  console.timeEnd('old');
+
+  console.time('new');
+  for (let i = 0; i < 100; i++) drawBgNew();
+  console.timeEnd('new');
+</script>
+</body>
+</html>
