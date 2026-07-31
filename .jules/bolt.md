@@ -11,3 +11,6 @@
 ## 2024-05-18 - [Optimize aiohttp session in LLMClient]
 **Learning:** Creating a new `aiohttp.ClientSession()` on every call inside `LLMClient` destroys the benefits of HTTP connection pooling and adds significant latency overhead per request when repeatedly calling the local LLM backend.
 **Action:** Reused a single `aiohttp.ClientSession` by caching it as a class attribute `self._session` to enable connection pooling and improve performance on sequential backend requests.
+## 2024-07-31 - Canvas Rendering Bottlenecks
+**Learning:** Drawing many static elements (like a dot grid) inside an animation loop (`requestAnimationFrame`) with separate `beginPath()` and `fill()` calls per element causes severe CPU bottlenecks in HTML5 Canvas.
+**Action:** Always batch drawing paths for static repeated elements. Call `beginPath()` once before the loop, use `moveTo()` to separate sub-paths within the loop, and call `fill()` once at the end.
