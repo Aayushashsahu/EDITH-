@@ -5,3 +5,7 @@
 ## 2025-01-26 - Keyboard Focus and Event Lifecycle for Vanilla JS Modals
 **Learning:** When modals are created dynamically using `innerHTML` rather than existing purely in the DOM, setting focus immediately often fails because the DOM hasn't rendered yet. A `requestAnimationFrame` callback ensures the UI is ready to accept focus. Additionally, managing `Escape` and `Enter` globally via the document requires checking `.open` state, allowing standard interactive element usage (checking `active.tagName` for buttons/anchors), checking `e.defaultPrevented`, and requiring `Ctrl/Meta+Enter` for textareas to prevent eating regular newlines.
 **Action:** Always wrap initial `.focus()` calls in `requestAnimationFrame` when injecting modal body HTML. For document-level keyboard listeners on modals, always whitelist native interactive tags and respect default prevented statuses to avoid unexpected interactions.
+
+## 2025-01-26 - Async Modal Buttons & Finally Block
+**Learning:** For async fetch operations triggered inside dynamic modals, it's critical to restore the loading state within a `finally` block. Without it, failed requests leave the UI disabled and permanently stuck.
+**Action:** Always wrap async submit actions in `try...finally` to ensure the modal's primary button unconditionally resets to a usable state, regardless of whether the network request succeeds or fails.
