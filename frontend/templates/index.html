@@ -821,7 +821,7 @@ function addMsg(role, text) {
 }
 
 function esc(s) {
-  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 
 // ── Orb state ──────────────────────────────────────────────────────────────
@@ -982,15 +982,21 @@ function drawBg() {
   // Hex dot grid (subtle)
   const hSize = 22, hW = hSize * Math.sqrt(3), hH = hSize * 1.5;
   bgx.fillStyle = "rgba(232,200,64,0.025)";
+
+  // ⚡ Bolt Optimization: Batch drawing identical elements into a single path.
+  // Instead of beginning and filling thousands of paths per frame which causes severe CPU overhead,
+  // we trace them all in one go, using `moveTo(cx + 1.5, cy)` to disconnect the sub-paths.
+  // (Adding 1.5 to X offsets exactly by the circle's radius so no connecting line is drawn).
+  bgx.beginPath();
   for (let col = -1; col < W / hW + 2; col++) {
     for (let row = -1; row < H / hH + 2; row++) {
       const cx = col * hW + (row % 2 === 0 ? 0 : hW / 2);
       const cy = row * hH;
-      bgx.beginPath();
+      bgx.moveTo(cx + 1.5, cy);
       bgx.arc(cx, cy, 1.5, 0, Math.PI * 2);
-      bgx.fill();
     }
   }
+  bgx.fill();
 
   gScroll += 0.0025;
   requestAnimationFrame(drawBg);
@@ -1125,22 +1131,21 @@ function openTasks() {
     <div class="m-form">
       <input class="m-input" id="new-task-title" placeholder="New task…">
       <input class="m-input" style="max-width:120px" id="new-task-due" placeholder="Due (e.g. tomorrow)">
-      <button class="m-btn" onclick="addTask()">ADD</button>
+      <button class="m-btn" onclick="addTask(this)">ADD</button>
     </div>
     <div>${rows}</div>
   `);
 }
 
-async function addTask() {
+async function addTask(btn) {
   const title = document.getElementById("new-task-title")?.value?.trim();
   const due   = document.getElementById("new-task-due")?.value?.trim();
   if (!title) return;
 
-  const btn = document.querySelector("#modal-body .m-btn");
   if (btn) {
     btn.disabled = true;
-    btn.textContent = "ADDING...";
     btn.style.opacity = "0.5";
+    btn.textContent = "ADDING...";
   }
 
   try {
@@ -1170,21 +1175,20 @@ function openBrain() {
     <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…"></textarea>
     <div style="display:flex;gap:8px">
       <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px">
-      <button class="m-btn" onclick="ingestBrain()">STORE IN BRAIN</button>
+      <button class="m-btn" onclick="ingestBrain(this)">STORE IN BRAIN</button>
     </div>
   `);
 }
 
-async function ingestBrain() {
+async function ingestBrain(btn) {
   const text   = document.getElementById("brain-text")?.value?.trim();
   const source = document.getElementById("brain-src")?.value?.trim() || "manual";
   if (!text) return;
 
-  const btn = document.querySelector("#modal-body .m-btn");
   if (btn) {
     btn.disabled = true;
-    btn.textContent = "STORING...";
     btn.style.opacity = "0.5";
+    btn.textContent = "STORING...";
   }
 
   try {
