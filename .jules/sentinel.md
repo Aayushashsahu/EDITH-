@@ -16,3 +16,7 @@
 **Vulnerability:** The custom `esc()` function in the frontend only escaped `<`, `>`, and `&`. It was used to sanitize data placed inside HTML attributes via `innerHTML` (e.g., `aria-label="Complete task: ${esc(t.title)}"`). This allowed attribute-based Cross-Site Scripting (XSS) because unescaped single or double quotes could break out of the attribute and inject malicious event handlers.
 **Learning:** Escaping HTML tags is insufficient when rendering data into HTML properties/attributes inside quotes using `innerHTML` or template literals.
 **Prevention:** The `esc()` function must explicitly escape single (`'`) and double (`"`) quotes as `&#39;` and `&quot;` to ensure full XSS protection.
+## 2024-05-15 - [Authorization Bypass via Fail-Open Fallback in Telegram Integration]
+**Vulnerability:** The Telegram integration authorization guard (`_guard`) in `telegram_bot.py` was returning true (fail-open) if `TELEGRAM_CHAT_ID` was not configured (`return not TELEGRAM_CHAT_ID or ...`). This allowed any user on Telegram to interact with the bot if the admin forgot to set the chat ID.
+**Learning:** Security controls that rely on user configuration (like `TELEGRAM_CHAT_ID`) must use a "deny-by-default" (fail-closed) approach. A missing configuration should result in access being denied, not access being granted to everyone.
+**Prevention:** Always default to denying access if a required security configuration is absent. Start services only when all required security constraints are satisfied, or fall back to the most restrictive state (fail-closed).
