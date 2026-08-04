@@ -945,28 +945,65 @@ function toast(title, body, isCall = false) {
 // ── Background: hex grid + perspective lines ────────────────────────────────
 const bgc = document.getElementById("bg-canvas");
 const bgx = bgc.getContext("2d");
+const staticBgCanvas = document.createElement("canvas");
+const staticBgCtx = staticBgCanvas.getContext("2d");
 let gScroll = 0;
 
-function resizeBg() { bgc.width = innerWidth; bgc.height = innerHeight; }
+function resizeBg() {
+  bgc.width = innerWidth;
+  bgc.height = innerHeight;
+  staticBgCanvas.width = innerWidth;
+  staticBgCanvas.height = innerHeight;
+
+  const W = staticBgCanvas.width, H = staticBgCanvas.height;
+  staticBgCtx.clearRect(0, 0, W, H);
+
+  // Perspective grid lines
+  const vx = W * 0.5, vy = H * 0.52;
+  const cols = 14;
+  staticBgCtx.lineWidth = 0.4;
+
+  for (let i = 0; i <= cols; i++) {
+    const x = (i / cols) * W;
+    staticBgCtx.beginPath();
+    staticBgCtx.strokeStyle = "rgba(232,200,64,0.05)";
+    staticBgCtx.moveTo(x, H);
+    staticBgCtx.lineTo(vx, vy);
+    staticBgCtx.stroke();
+  }
+
+  // Hex dot grid (subtle)
+  const hSize = 22, hW = hSize * Math.sqrt(3), hH = hSize * 1.5;
+  staticBgCtx.fillStyle = "rgba(232,200,64,0.025)";
+
+  // ⚡ Bolt Optimization: Batch drawing identical elements into a single path.
+  // Instead of beginning and filling thousands of paths per frame which causes severe CPU overhead,
+  // we trace them all in one go, using `moveTo(cx + 1.5, cy)` to disconnect the sub-paths.
+  // (Adding 1.5 to X offsets exactly by the circle's radius so no connecting line is drawn).
+  staticBgCtx.beginPath();
+  for (let col = -1; col < W / hW + 2; col++) {
+    for (let row = -1; row < H / hH + 2; row++) {
+      const cx = col * hW + (row % 2 === 0 ? 0 : hW / 2);
+      const cy = row * hH;
+      staticBgCtx.moveTo(cx + 1.5, cy);
+      staticBgCtx.arc(cx, cy, 1.5, 0, Math.PI * 2);
+    }
+  }
+  staticBgCtx.fill();
+}
 resizeBg(); addEventListener("resize", resizeBg);
 
 function drawBg() {
   const W = bgc.width, H = bgc.height;
   bgx.clearRect(0, 0, W, H);
 
+  // Draw pre-rendered static elements (vertical lines and hex dots)
+  bgx.drawImage(staticBgCanvas, 0, 0);
+
   // Perspective grid lines
   const vx = W * 0.5, vy = H * 0.52;
-  const cols = 14, rows = 10;
+  const rows = 10;
   bgx.lineWidth = 0.4;
-
-  for (let i = 0; i <= cols; i++) {
-    const x = (i / cols) * W;
-    bgx.beginPath();
-    bgx.strokeStyle = "rgba(232,200,64,0.05)";
-    bgx.moveTo(x, H);
-    bgx.lineTo(vx, vy);
-    bgx.stroke();
-  }
 
   for (let j = 0; j <= rows; j++) {
     const t = ((j / rows) + (gScroll % 1)) % 1;
@@ -978,25 +1015,6 @@ function drawBg() {
     bgx.moveTo(xL, y); bgx.lineTo(xR, y);
     bgx.stroke();
   }
-
-  // Hex dot grid (subtle)
-  const hSize = 22, hW = hSize * Math.sqrt(3), hH = hSize * 1.5;
-  bgx.fillStyle = "rgba(232,200,64,0.025)";
-
-  // ⚡ Bolt Optimization: Batch drawing identical elements into a single path.
-  // Instead of beginning and filling thousands of paths per frame which causes severe CPU overhead,
-  // we trace them all in one go, using `moveTo(cx + 1.5, cy)` to disconnect the sub-paths.
-  // (Adding 1.5 to X offsets exactly by the circle's radius so no connecting line is drawn).
-  bgx.beginPath();
-  for (let col = -1; col < W / hW + 2; col++) {
-    for (let row = -1; row < H / hH + 2; row++) {
-      const cx = col * hW + (row % 2 === 0 ? 0 : hW / 2);
-      const cy = row * hH;
-      bgx.moveTo(cx + 1.5, cy);
-      bgx.arc(cx, cy, 1.5, 0, Math.PI * 2);
-    }
-  }
-  bgx.fill();
 
   gScroll += 0.0025;
   requestAnimationFrame(drawBg);
