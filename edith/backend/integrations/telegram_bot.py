@@ -10,8 +10,8 @@ from config.config import TELEGRAM_ENABLED, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID
 
 
 async def start_bot(orchestrator):
-    if not TELEGRAM_ENABLED or not TELEGRAM_TOKEN:
-        print("  [Telegram] Disabled. Configure TELEGRAM_TOKEN in config.py")
+    if not TELEGRAM_ENABLED or not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("  [Telegram] Disabled. Configure TELEGRAM_TOKEN and TELEGRAM_CHAT_ID in config.py")
         return
     try:
         from telegram import Update
@@ -21,7 +21,7 @@ async def start_bot(orchestrator):
         return
 
     def _guard(update) -> bool:
-        return not TELEGRAM_CHAT_ID or str(update.effective_chat.id) == str(TELEGRAM_CHAT_ID)
+        return bool(TELEGRAM_CHAT_ID and str(update.effective_chat.id) == str(TELEGRAM_CHAT_ID))
 
     async def start(u: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await u.message.reply_text("*E.D.I.T.H. V8 online.* Send any command.", parse_mode="Markdown")
