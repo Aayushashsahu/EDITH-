@@ -8,3 +8,7 @@
 ## 2026-08-02 - [Async Loading States on UI Buttons]
 **Learning:** When implementing async loading states on UI buttons, always wrap the network request in a `try...finally` block to unconditionally reset the button state (`btn.disabled = false`), preventing the UI from getting permanently stuck if the request fails.
 **Action:** Use `try...finally` pattern for all async operations triggered by user actions.
+
+## 2026-08-07 - [Accessible Dynamic Inputs in Minimalist UI]
+**Learning:** When adding inputs to dynamically generated `innerHTML` modals where semantic `<form>` contexts and explicit `<label>` tags are intentionally omitted to preserve minimalist styling, screen reader accessibility is severely impacted.
+**Action:** Always add explicit `aria-label` attributes directly to these dynamically injected `<input>` and `<textarea>` elements to ensure accessibility compliance without compromising the visual design.
