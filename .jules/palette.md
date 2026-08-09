@@ -8,3 +8,6 @@
 ## 2026-08-02 - [Async Loading States on UI Buttons]
 **Learning:** When implementing async loading states on UI buttons, always wrap the network request in a `try...finally` block to unconditionally reset the button state (`btn.disabled = false`), preventing the UI from getting permanently stuck if the request fails.
 **Action:** Use `try...finally` pattern for all async operations triggered by user actions.
+## 2024-11-20 - [ARIA Labels on Dynamic Inputs]
+**Learning:** When adding inputs to dynamic `innerHTML` modals (e.g., `openTasks`, `openBrain`), explicit `<label>` tags are often intentionally omitted to maintain minimalistic styling. To ensure accessibility compliance, always add explicit `aria-label` attributes directly to these `<input>` and `<textarea>` elements.
+**Action:** When working with dynamic form controls lacking visual labels, inject `aria-label` directly on the input/textarea itself.
