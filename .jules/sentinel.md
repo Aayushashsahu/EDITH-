@@ -16,3 +16,8 @@
 **Vulnerability:** The custom `esc()` function in the frontend only escaped `<`, `>`, and `&`. It was used to sanitize data placed inside HTML attributes via `innerHTML` (e.g., `aria-label="Complete task: ${esc(t.title)}"`). This allowed attribute-based Cross-Site Scripting (XSS) because unescaped single or double quotes could break out of the attribute and inject malicious event handlers.
 **Learning:** Escaping HTML tags is insufficient when rendering data into HTML properties/attributes inside quotes using `innerHTML` or template literals.
 **Prevention:** The `esc()` function must explicitly escape single (`'`) and double (`"`) quotes as `&#39;` and `&quot;` to ensure full XSS protection.
+
+## 2024-08-09 - [Deny-By-Default on Authentication Configurations]
+**Vulnerability:** Telegram Bot allowed unauthorized access. If `TELEGRAM_CHAT_ID` was not configured, the Telegram bot defaulted to a permissive state (`_guard` returned `True` allowing all chats) acting as an authentication bypass.
+**Learning:** Default-allow/fail-open approaches for user configurations regarding security controls are risky. Missing security configuration should lead to active denial of access rather than permissive fallback state.
+**Prevention:** Implement "deny-by-default" logic. If security-related settings (like an allowed ID) are missing, actively deny access or refuse to start the related service/integration.
