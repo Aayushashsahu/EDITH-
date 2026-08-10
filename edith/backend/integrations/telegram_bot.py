@@ -13,6 +13,9 @@ async def start_bot(orchestrator):
     if not TELEGRAM_ENABLED or not TELEGRAM_TOKEN:
         print("  [Telegram] Disabled. Configure TELEGRAM_TOKEN in config.py")
         return
+    if not TELEGRAM_CHAT_ID:
+        print("  [Telegram] CRITICAL: TELEGRAM_CHAT_ID not configured. Refusing to start to prevent unauthorized access.")
+        return
     try:
         from telegram import Update
         from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
@@ -21,7 +24,7 @@ async def start_bot(orchestrator):
         return
 
     def _guard(update) -> bool:
-        return not TELEGRAM_CHAT_ID or str(update.effective_chat.id) == str(TELEGRAM_CHAT_ID)
+        return bool(TELEGRAM_CHAT_ID) and str(update.effective_chat.id) == str(TELEGRAM_CHAT_ID)
 
     async def start(u: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await u.message.reply_text("*E.D.I.T.H. V8 online.* Send any command.", parse_mode="Markdown")
