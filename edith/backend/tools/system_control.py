@@ -92,13 +92,17 @@ class SystemControl:
 
     def open_app(self, app: str) -> str:
         key = re.sub(r"\s+", "", app.lower())
-        cmd = self._APPS.get(key, f"start {app}")
-        _cmd(cmd)
+        if key in self._APPS:
+            _cmd(self._APPS[key])
+        else:
+            safe_app = app.replace("'", "''")
+            _ps(f"Start-Process '{safe_app}'")
         return f"Opening {app}."
 
     def close_app(self, app: str) -> str:
-        out = _cmd(f"taskkill /F /IM {app}.exe 2>&1")
-        if "SUCCESS" in out or "terminated" in out.lower():
+        safe_app = app.replace("'", "''")
+        out = _ps(f"Stop-Process -Name '{safe_app}' -Force")
+        if "Cannot find a process with the name" not in out:
             return f"Closed {app}."
         # fallback to psutil
         killed = sum(1 for p in psutil.process_iter(["name"])
@@ -184,17 +188,20 @@ class SystemControl:
         return f"Typed: {text}"
 
     def hotkey(self, keys: str) -> str:
-        _ps(f"(New-Object -ComObject WScript.Shell).SendKeys('{keys}')")
+        safe_keys = keys.replace("'", "''")
+        _ps(f"(New-Object -ComObject WScript.Shell).SendKeys('{safe_keys}')")
         return f"Sent keys: {keys}"
 
     # ── Windows toast notification ────────────────────────────────────────────
     def notify(self, title: str, body: str) -> str:
+        safe_title = title.replace("'", "''")
+        safe_body = body.replace("'", "''")
         ps = (
             "Add-Type -AssemblyName System.Windows.Forms;"
             "$n=New-Object System.Windows.Forms.NotifyIcon;"
             "$n.Icon=[System.Drawing.SystemIcons]::Information;"
             "$n.Visible=$true;"
-            f"$n.ShowBalloonTip(5000,'{title}','{body}',[System.Windows.Forms.ToolTipIcon]::None);"
+            f"$n.ShowBalloonTip(5000,'{safe_title}','{safe_body}',[System.Windows.Forms.ToolTipIcon]::None);"
         )
         _ps(ps)
         return f"Notification: {title}"
