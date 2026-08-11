@@ -14,3 +14,6 @@
 ## 2024-08-02 - Batched Canvas Rendering
 **Learning:** In animation loops (`requestAnimationFrame`), drawing many static elements (like a dot grid) using separate `beginPath()` and `fill()` calls per element causes a severe CPU bottleneck in this codebase's monolithic UI.
 **Action:** Always batch drawing of identical elements (same color/style) into a single path. Call `beginPath()` once, use `moveTo()` to separate sub-paths, and call `fill()` once at the end.
+## 2024-05-24 - Use aiohttp connection pooling for WebTools and ScreenVision
+**Learning:** Creating a new `aiohttp.ClientSession()` for every request incurs significant overhead due to TCP/TLS handshakes, leading to severe latency bottlenecks in network-heavy classes like `WebTools` and `ScreenVision`.
+**Action:** Implemented connection pooling by caching a single `aiohttp.ClientSession` instance per client (similar to `LLMClient`), gracefully handling session closure on the event loop to prevent 'Unclosed client session' resource leak warnings.

@@ -14,6 +14,36 @@ from config.config import OLLAMA_URL, MODEL_VISION, OLLAMA_TIMEOUT, WIN_USER
 
 
 class ScreenVision:
+    def __init__(self):
+        # Cache session to avoid TCP/TLS handshake overhead per request.
+        # This significantly lowers latency for repetitive vision model calls.
+        self._session = None
+
+    def _get_session(self):
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession()
+        return self._session
+
+    async def close(self):
+        if self._session and not self._session.closed:
+            await self._session.close()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
+
+    def __del__(self):
+        if self._session and not self._session.closed:
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.create_task(self.close())
+                else:
+                    loop.run_until_complete(self.close())
+            except Exception:
+                pass
 
     async def capture_and_describe(self, prompt: str = "Describe what is on the screen in detail.") -> str:
         """Take a screenshot and ask LLaVA to describe it."""
@@ -91,13 +121,13 @@ class ScreenVision:
             "options": {"num_predict": 512}
         }
         try:
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    f"{OLLAMA_URL}/api/generate", json=payload,
-                    timeout=aiohttp.ClientTimeout(total=OLLAMA_TIMEOUT)
-                ) as r:
-                    data = await r.json()
-                    return data.get("response", "").strip()
+            s = self._get_session()
+            async with s.post(
+                f"{OLLAMA_URL}/api/generate", json=payload,
+                timeout=aiohttp.ClientTimeout(total=OLLAMA_TIMEOUT)
+            ) as r:
+                data = await r.json()
+                return data.get("response", "").strip()
         except aiohttp.ClientConnectorError:
             return "LLaVA unavailable — run: ollama pull llava:7b"
         except Exception as e:
