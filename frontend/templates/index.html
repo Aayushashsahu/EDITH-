@@ -1129,8 +1129,8 @@ function openTasks() {
     : `<div class="dr-key" style="padding:10px;font-family:var(--mono)">No tasks.</div>`;
   openModal("// TASK QUEUE", `
     <div class="m-form">
-      <input class="m-input" id="new-task-title" placeholder="New task…">
-      <input class="m-input" style="max-width:120px" id="new-task-due" placeholder="Due (e.g. tomorrow)">
+      <input class="m-input" id="new-task-title" placeholder="New task…" aria-label="New task title">
+      <input class="m-input" style="max-width:120px" id="new-task-due" placeholder="Due (e.g. tomorrow)" aria-label="Task due date">
       <button class="m-btn" onclick="addTask(this)">ADD</button>
     </div>
     <div>${rows}</div>
@@ -1172,9 +1172,9 @@ function openBrain() {
       Drop text below to store it in EDITH's long-term memory.
       Files: drop them in data/second_brain/ folder.
     </div>
-    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…"></textarea>
+    <textarea class="m-textarea" id="brain-text" placeholder="Paste notes, facts, research, anything…" aria-label="Text to store in brain"></textarea>
     <div style="display:flex;gap:8px">
-      <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px">
+      <input class="m-input" id="brain-src" placeholder="Source label (optional)" style="max-width:200px" aria-label="Source label">
       <button class="m-btn" onclick="ingestBrain(this)">STORE IN BRAIN</button>
     </div>
   `);
