@@ -8,3 +8,7 @@
 ## 2026-08-02 - [Async Loading States on UI Buttons]
 **Learning:** When implementing async loading states on UI buttons, always wrap the network request in a `try...finally` block to unconditionally reset the button state (`btn.disabled = false`), preventing the UI from getting permanently stuck if the request fails.
 **Action:** Use `try...finally` pattern for all async operations triggered by user actions.
+
+## 2026-08-04 - [ARIA Labels on Dynamic Inputs]
+**Learning:** When modals containing input and textarea elements are generated via string interpolation (e.g., using backticks and innerHTML), structural semantic forms and explicit label tags might be intentionally omitted for minimalistic styling. In these cases, it is crucial to inject explicit aria-label attributes directly into the input elements to preserve accessibility for screen readers.
+**Action:** Always verify that dynamically injected text inputs and textareas have explicit aria-labels if they lack associated label elements.
