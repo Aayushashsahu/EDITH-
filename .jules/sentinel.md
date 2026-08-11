@@ -16,3 +16,8 @@
 **Vulnerability:** The custom `esc()` function in the frontend only escaped `<`, `>`, and `&`. It was used to sanitize data placed inside HTML attributes via `innerHTML` (e.g., `aria-label="Complete task: ${esc(t.title)}"`). This allowed attribute-based Cross-Site Scripting (XSS) because unescaped single or double quotes could break out of the attribute and inject malicious event handlers.
 **Learning:** Escaping HTML tags is insufficient when rendering data into HTML properties/attributes inside quotes using `innerHTML` or template literals.
 **Prevention:** The `esc()` function must explicitly escape single (`'`) and double (`"`) quotes as `&#39;` and `&quot;` to ensure full XSS protection.
+
+## 2024-08-10 - [Command Injection via PowerShell Bridge Interpolation]
+**Vulnerability:** Methods in `system_control.py` (like `open_app`, `close_app`, `notify`, and `hotkey`) passed unsanitized string arguments directly into PowerShell strings (e.g. `Start-Process '{app}'`), allowing an attacker to break out of the string context and execute arbitrary PowerShell code if they included a single quote in their payload.
+**Learning:** Passing user-supplied strings directly into PowerShell commands enclosed in single quotes is dangerous if the input itself contains single quotes. It breaks the string literal context and evaluates subsequent text as code.
+**Prevention:** Always escape single quotes in variables before passing them into the `_ps` PowerShell bridge by replacing them with two single quotes (`replace("'", "''")`).
