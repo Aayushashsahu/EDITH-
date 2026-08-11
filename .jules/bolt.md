@@ -14,3 +14,7 @@
 ## 2024-08-02 - Batched Canvas Rendering
 **Learning:** In animation loops (`requestAnimationFrame`), drawing many static elements (like a dot grid) using separate `beginPath()` and `fill()` calls per element causes a severe CPU bottleneck in this codebase's monolithic UI.
 **Action:** Always batch drawing of identical elements (same color/style) into a single path. Call `beginPath()` once, use `moveTo()` to separate sub-paths, and call `fill()` once at the end.
+
+## 2026-08-04 - Pre-rendering static canvas paths
+**Learning:** Evaluating and drawing hundreds of static shapes per frame in a `requestAnimationFrame` loop incurs heavy CPU overhead, even when path drawing is batched.
+**Action:** Moved static element generation (like hex dot grids) to an offscreen canvas and drew the pre-rendered texture using `drawImage()` during the animation frame. Always pre-render complex static elements instead of drawing them dynamically on every frame.
