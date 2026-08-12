@@ -21,3 +21,8 @@
 **Vulnerability:** Methods in `system_control.py` (like `open_app`, `close_app`, `notify`, and `hotkey`) passed unsanitized string arguments directly into PowerShell strings (e.g. `Start-Process '{app}'`), allowing an attacker to break out of the string context and execute arbitrary PowerShell code if they included a single quote in their payload.
 **Learning:** Passing user-supplied strings directly into PowerShell commands enclosed in single quotes is dangerous if the input itself contains single quotes. It breaks the string literal context and evaluates subsequent text as code.
 **Prevention:** Always escape single quotes in variables before passing them into the `_ps` PowerShell bridge by replacing them with two single quotes (`replace("'", "''")`).
+
+## 2025-02-12 - [Authorization Bypass in Telegram Bot (Fail-Open)]
+**Vulnerability:** The Telegram bot integration used a "fail-open" strategy where if `TELEGRAM_CHAT_ID` was not configured (e.g. empty string), it would allow any user to interact with the bot (`return not TELEGRAM_CHAT_ID or ...`). This left the system open to arbitrary commands from anyone who discovered the bot token.
+**Learning:** Security controls that rely on user configuration should default to a "fail-closed" (deny-by-default) state. If a required authorization constraint (like an allowed chat ID) is missing, access should be universally denied rather than universally allowed.
+**Prevention:** Always mandate strict equality checks for authorization identities (e.g. `str(update.effective_chat.id) == str(TELEGRAM_CHAT_ID)`). In configuration loading, actively refuse to start the integration if critical security configurations (like an allow-list or expected user ID) are absent.
