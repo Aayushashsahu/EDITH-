@@ -14,3 +14,9 @@
 ## 2024-08-02 - Batched Canvas Rendering
 **Learning:** In animation loops (`requestAnimationFrame`), drawing many static elements (like a dot grid) using separate `beginPath()` and `fill()` calls per element causes a severe CPU bottleneck in this codebase's monolithic UI.
 **Action:** Always batch drawing of identical elements (same color/style) into a single path. Call `beginPath()` once, use `moveTo()` to separate sub-paths, and call `fill()` once at the end.
+## 2024-05-19 - [Fix 'Task was destroyed but it is pending' async leak]
+**Learning:** When scheduling async closure (e.g., `loop.create_task(self.close())`) inside a `__del__` method, failing to retain a strong reference to the created task leads to "'Task was destroyed but it is pending!'" warnings because the event loop garbage collects the task before it can complete.
+**Action:** Always assign the result of `loop.create_task` to a class attribute (e.g., `self._close_task = loop.create_task(...)`) inside `__del__` methods when cleaning up async resources like `aiohttp.ClientSession`.
+## 2024-05-20 - [Optimize WebTools Connection Pooling & Fix async task leak]
+**Learning:** Reusing `aiohttp.ClientSession()` provides significant speed improvements (TCP handshake overhead). However, managing async cleanups inside a `__del__` method leads to "'Task was destroyed but it is pending!'" if the event loop garbage collects the task before it can complete. Assigning the task to `self._close_task` fails because `self` is actively being garbage collected.
+**Action:** Used `self.__class__._close_tasks = set()` and `self.__class__._close_tasks.add(task)` with `task.add_done_callback(self.__class__._close_tasks.discard)` to ensure strong global references to cleanup tasks during garbage collection.
