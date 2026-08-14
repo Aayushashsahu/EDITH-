@@ -14,3 +14,7 @@
 ## 2024-08-02 - Batched Canvas Rendering
 **Learning:** In animation loops (`requestAnimationFrame`), drawing many static elements (like a dot grid) using separate `beginPath()` and `fill()` calls per element causes a severe CPU bottleneck in this codebase's monolithic UI.
 **Action:** Always batch drawing of identical elements (same color/style) into a single path. Call `beginPath()` once, use `moveTo()` to separate sub-paths, and call `fill()` once at the end.
+
+## 2024-11-09 - Connection Pooling for Web Tools
+**Learning:** Instantiating `aiohttp.ClientSession` for every API call (e.g., search, weather, scraping) prevents TCP/TLS connection pooling and adds significant latency overhead. Furthermore, when caching `ClientSession` and closing it via `__del__`, naive assignment of `asyncio.create_task` to an instance variable (`self._close_task = task`) fails and leads to "Task was destroyed but it is pending!" errors because the instance (`self`) is already being garbage collected.
+**Action:** Always reuse a single `ClientSession` instance across operations when possible. To safely schedule asynchronous cleanup in `__del__`, assign the task to a class-level set (e.g., `self.__class__._close_tasks.add(task)`) and attach a callback to remove it (`task.add_done_callback(self.__class__._close_tasks.discard)`) to maintain a strong reference globally.
