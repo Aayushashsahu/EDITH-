@@ -1145,7 +1145,7 @@ async function addTask(btn) {
   if (btn) {
     btn.disabled = true;
     btn.style.opacity = "0.5";
-    btn.innerText = "ADDING...";
+    btn.textContent = "ADDING...";
   }
 
   try {
@@ -1160,8 +1160,8 @@ async function addTask(btn) {
   } finally {
     if (btn) {
       btn.disabled = false;
+      btn.textContent = "ADD";
       btn.style.opacity = "1";
-      btn.innerText = "ADD";
     }
   }
 }
@@ -1188,7 +1188,7 @@ async function ingestBrain(btn) {
   if (btn) {
     btn.disabled = true;
     btn.style.opacity = "0.5";
-    btn.innerText = "STORING...";
+    btn.textContent = "STORING...";
   }
 
   try {
@@ -1203,8 +1203,8 @@ async function ingestBrain(btn) {
   } finally {
     if (btn) {
       btn.disabled = false;
+      btn.textContent = "STORE IN BRAIN";
       btn.style.opacity = "1";
-      btn.innerText = "STORE IN BRAIN";
     }
   }
 }
