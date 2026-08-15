@@ -947,7 +947,35 @@ const bgc = document.getElementById("bg-canvas");
 const bgx = bgc.getContext("2d");
 let gScroll = 0;
 
-function resizeBg() { bgc.width = innerWidth; bgc.height = innerHeight; }
+// Offscreen canvas for static hex grid
+const hexCanvas = document.createElement("canvas");
+const hexx = hexCanvas.getContext("2d");
+
+function resizeBg() {
+  bgc.width = innerWidth; bgc.height = innerHeight;
+  hexCanvas.width = innerWidth; hexCanvas.height = innerHeight;
+  renderHexGrid();
+}
+
+function renderHexGrid() {
+  const W = hexCanvas.width, H = hexCanvas.height;
+  hexx.clearRect(0, 0, W, H);
+
+  const hSize = 22, hW = hSize * Math.sqrt(3), hH = hSize * 1.5;
+  hexx.fillStyle = "rgba(232,200,64,0.025)";
+
+  hexx.beginPath();
+  for (let col = -1; col < W / hW + 2; col++) {
+    for (let row = -1; row < H / hH + 2; row++) {
+      const cx = col * hW + (row % 2 === 0 ? 0 : hW / 2);
+      const cy = row * hH;
+      hexx.moveTo(cx + 1.5, cy);
+      hexx.arc(cx, cy, 1.5, 0, Math.PI * 2);
+    }
+  }
+  hexx.fill();
+}
+
 resizeBg(); addEventListener("resize", resizeBg);
 
 function drawBg() {
@@ -980,23 +1008,10 @@ function drawBg() {
   }
 
   // Hex dot grid (subtle)
-  const hSize = 22, hW = hSize * Math.sqrt(3), hH = hSize * 1.5;
-  bgx.fillStyle = "rgba(232,200,64,0.025)";
-
-  // ⚡ Bolt Optimization: Batch drawing identical elements into a single path.
-  // Instead of beginning and filling thousands of paths per frame which causes severe CPU overhead,
-  // we trace them all in one go, using `moveTo(cx + 1.5, cy)` to disconnect the sub-paths.
-  // (Adding 1.5 to X offsets exactly by the circle's radius so no connecting line is drawn).
-  bgx.beginPath();
-  for (let col = -1; col < W / hW + 2; col++) {
-    for (let row = -1; row < H / hH + 2; row++) {
-      const cx = col * hW + (row % 2 === 0 ? 0 : hW / 2);
-      const cy = row * hH;
-      bgx.moveTo(cx + 1.5, cy);
-      bgx.arc(cx, cy, 1.5, 0, Math.PI * 2);
-    }
-  }
-  bgx.fill();
+  // ⚡ Bolt Optimization: Pre-render static elements to offscreen canvas
+  // Instead of computing and tracing the hex dot paths on every single frame,
+  // we draw it once during resize and simply copy the pixel data here, vastly reducing CPU overhead.
+  bgx.drawImage(hexCanvas, 0, 0);
 
   gScroll += 0.0025;
   requestAnimationFrame(drawBg);
