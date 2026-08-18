@@ -4,11 +4,12 @@ E.D.I.T.H. V8 — Ollama async LLM + embedding client
 
 import aiohttp
 import asyncio
-import json
 from config.config import OLLAMA_URL, OLLAMA_TIMEOUT, MODEL_FAST, MODEL_EMBED
 
 
 class LLMClient:
+    _close_tasks = set()
+
     def __init__(self):
         self.base = OLLAMA_URL
         self._session = None
@@ -33,7 +34,9 @@ class LLMClient:
             try:
                 loop = asyncio.get_event_loop()
                 if loop.is_running():
-                    loop.create_task(self.close())
+                    task = loop.create_task(self.close())
+                    self.__class__._close_tasks.add(task)
+                    task.add_done_callback(self.__class__._close_tasks.discard)
                 else:
                     loop.run_until_complete(self.close())
             except Exception:
