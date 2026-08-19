@@ -17,3 +17,7 @@
 ## 2026-08-03 - HTML5 Canvas Batching vs Pre-rendering
 **Learning:** While batching canvas paths (e.g., using moveTo to separate sub-paths before a single fill) avoids redundant state changes, drawing hundreds of static shapes repeatedly inside a requestAnimationFrame loop still incurs heavy CPU overhead due to evaluating the paths frame after frame.
 **Action:** Always pre-render complex static canvas elements (like grids or dots) to an offscreen canvas. Then, simply copy the pre-rendered texture using drawImage(offscreenCanvas, 0, 0) during the main animation loop to vastly reduce CPU usage.
+
+## 2024-05-30 - Fix memory leak in aiohttp session closure
+**Learning:** Assigning a task to `self._close_task` fails during garbage collection because `self` is actively being destroyed. This causes a 'Task was destroyed but it is pending!' resource leak.
+**Action:** Assign the close task to a class-level set (`self.__class__._close_tasks.add(task)`) and use a callback to remove it when done to retain a strong global reference.
