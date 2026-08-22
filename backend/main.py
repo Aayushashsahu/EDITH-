@@ -4,7 +4,11 @@ WebSocket real-time comms, REST API, static file serving.
 Start: uvicorn backend.main:app --host 0.0.0.0 --port 8888 --reload
 """
 
-import asyncio, json, os, sys, secrets
+import asyncio
+import json
+import os
+import sys
+import secrets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, Security, Request
@@ -16,7 +20,6 @@ import uvicorn
 
 from backend.agents.orchestrator import Orchestrator
 from backend.memory.store import MemoryStore
-from backend.memory.brain import SecondBrain
 from backend.voice.tts import TTSEngine
 from backend.automations.scheduler import setup as setup_sched
 from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY, ALLOWED_ORIGINS
@@ -49,15 +52,23 @@ sched             = None
 
 
 async def broadcast(event: dict):
+    if not clients:
+        return
     dead = []
     msg  = json.dumps(event)
-    for ws in clients:
-        try:
-            await ws.send_text(msg)
-        except Exception:
+
+    # Broadcast to all clients concurrently to eliminate sequential await bottleneck
+    active_clients = list(clients)
+    tasks = [ws.send_text(msg) for ws in active_clients]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    for ws, res in zip(active_clients, results):
+        if isinstance(res, Exception):
             dead.append(ws)
+
     for ws in dead:
-        clients.remove(ws)
+        if ws in clients:
+            clients.remove(ws)
 
 
 @app.on_event("startup")
