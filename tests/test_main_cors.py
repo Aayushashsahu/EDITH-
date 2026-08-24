@@ -11,10 +11,15 @@ sys.modules['pyaudio'] = MagicMock()
 sys.modules['chromadb'] = MagicMock()
 
 # Need to mock the agent dependencies as well so we can test the main.py
-patch("backend.memory.store.MemoryStore", MagicMock()).start()
-patch("backend.memory.brain.SecondBrain", MagicMock()).start()
-patch("backend.voice.tts.TTSEngine", MagicMock()).start()
-patch("backend.agents.orchestrator.Orchestrator", MagicMock()).start()
+sys.modules['backend.agents'] = MagicMock()
+sys.modules['backend.agents.orchestrator'] = MagicMock()
+sys.modules['backend.memory'] = MagicMock()
+sys.modules['backend.memory.store'] = MagicMock()
+sys.modules['backend.memory.brain'] = MagicMock()
+sys.modules['backend.voice'] = MagicMock()
+sys.modules['backend.voice.tts'] = MagicMock()
+sys.modules['backend.automations'] = MagicMock()
+sys.modules['backend.automations.scheduler'] = MagicMock()
 
 # Mock fastap StaticFiles mount check
 patch("fastapi.staticfiles.StaticFiles.__init__", return_value=None).start()
