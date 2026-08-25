@@ -48,15 +48,33 @@ sched             = None
 
 
 async def broadcast(event: dict):
-    dead = []
-    msg  = json.dumps(event)
-    for ws in clients:
+    msg = json.dumps(event)
+
+    # ⚡ OPTIMIZATION: Concurrent WebSocket Broadcasting
+    # Sequentially awaiting `ws.send_text` for each client creates a significant I/O bottleneck
+    # as the number of connected clients scales up. By using `asyncio.gather`, we send messages
+    # to all clients concurrently, drastically reducing total broadcast latency.
+    # Impact: Reduces broadcast time from O(N) sequential network delays to O(1) concurrent dispatch.
+
+    # We iterate over a shallow copy of the active clients list to prevent race conditions
+    # where the clients list might be modified by disconnects while yielding to the event loop.
+    active_clients = list(clients)
+    if not active_clients:
+        return
+
+    async def _send(ws):
         try:
             await ws.send_text(msg)
+            return None
         except Exception:
-            dead.append(ws)
-    for ws in dead:
-        clients.remove(ws)
+            return ws
+
+    results = await asyncio.gather(*(_send(ws) for ws in active_clients))
+
+    # Clean up any dead connections returned by the gather results
+    for dead_ws in results:
+        if dead_ws and dead_ws in clients:
+            clients.remove(dead_ws)
 
 
 @app.on_event("startup")
