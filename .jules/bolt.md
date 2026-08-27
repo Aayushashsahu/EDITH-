@@ -17,3 +17,6 @@
 ## 2026-08-03 - HTML5 Canvas Batching vs Pre-rendering
 **Learning:** While batching canvas paths (e.g., using moveTo to separate sub-paths before a single fill) avoids redundant state changes, drawing hundreds of static shapes repeatedly inside a requestAnimationFrame loop still incurs heavy CPU overhead due to evaluating the paths frame after frame.
 **Action:** Always pre-render complex static canvas elements (like grids or dots) to an offscreen canvas. Then, simply copy the pre-rendered texture using drawImage(offscreenCanvas, 0, 0) during the main animation loop to vastly reduce CPU usage.
+## 2024-10-27 - Non-blocking CPU Measurement in FastAPI
+**Learning:** Using `psutil.cpu_percent(interval=0.3)` inside synchronous methods called by async endpoints (`/api/status`) causes the event loop to block for the entire interval duration. Since the frontend polls `/api/status` every 5-8 seconds, this causes regular 300ms latency spikes across the entire application, delaying WebSocket broadcasts and TTS processing.
+**Action:** Changed the CPU metric collection to use `psutil.cpu_percent(interval=None)` and primed it during the `SystemControl` initialization. This makes subsequent calls instantly return the average CPU usage since the last call, completely eliminating the event loop block.
