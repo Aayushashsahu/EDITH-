@@ -41,8 +41,8 @@ class SystemControl:
         return now.strftime("It is %I:%M %p on %A, %d %B %Y.")
 
     # ── System stats ──────────────────────────────────────────────────────────
-    def system_info(self) -> str:
-        cpu  = psutil.cpu_percent(interval=0.5)
+    def system_info(self, interval: float | None = 0.5) -> str:
+        cpu  = psutil.cpu_percent(interval=interval)
         ram  = psutil.virtual_memory()
         disk = psutil.disk_usage("/")
         bat  = psutil.sensors_battery()
@@ -51,8 +51,8 @@ class SystemControl:
                 f"({ram.used>>20}MB/{ram.total>>20}MB)  ·  "
                 f"Disk {disk.percent}%  ·  Battery {bat_s}")
 
-    def stats_dict(self) -> dict:
-        cpu  = psutil.cpu_percent(interval=0.3)
+    def stats_dict(self, interval: float | None = 0.3) -> dict:
+        cpu  = psutil.cpu_percent(interval=interval)
         ram  = psutil.virtual_memory()
         bat  = psutil.sensors_battery()
         return {
