@@ -1,9 +1,7 @@
 # E.D.I.T.H. V8
 ### *Even Dead I'm The Hero*
 
-> Tony Stark's personal AI — rebuilt from scratch. 100% offline, runs on your Samsung Book 5 360 via WSL2.
-
----
+> Tony Stark's personal AI — rebuilt from scratch. 100% offline, runs on your Samsung Book 5 360 
 
 ## Stack
 
