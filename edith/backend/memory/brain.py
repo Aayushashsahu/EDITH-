@@ -64,9 +64,9 @@ class SecondBrain:
         if not p.exists():
             return 0
         if p.suffix.lower() == ".pdf":
-            text = self._read_pdf(filepath)
+            text = await self._read_pdf(filepath)
         else:
-            text = p.read_text(errors="ignore")
+            text = await asyncio.to_thread(p.read_text, errors="ignore")
         return await self.ingest_text(text, source=p.name)
 
     # ── Retrieval ─────────────────────────────────────────────────────────────
@@ -106,11 +106,13 @@ class SecondBrain:
             results.extend(batch_results)
         return results
 
-    def _read_pdf(self, path: str) -> str:
-        try:
-            import fitz
-            return "\n".join(p.get_text() for p in fitz.open(path))
-        except ImportError:
-            return "[PDF support: pip install pymupdf]"
-        except Exception as e:
-            return f"[PDF error: {e}]"
+    async def _read_pdf(self, path: str) -> str:
+        def _parse():
+            try:
+                import fitz
+                return "\n".join(p.get_text() for p in fitz.open(path))
+            except ImportError:
+                return "[PDF support: pip install pymupdf]"
+            except Exception as e:
+                return f"[PDF error: {e}]"
+        return await asyncio.to_thread(_parse)
