@@ -25,3 +25,7 @@
 **Vulnerability:** The Telegram integration used a fail-open authorization check `not TELEGRAM_CHAT_ID or str(update.effective_chat.id) == str(TELEGRAM_CHAT_ID)`, meaning if a user neglected to configure `TELEGRAM_CHAT_ID`, the bot would accept commands from any Telegram user on the internet. It also lacked authorization checks on the `/start` command.
 **Learning:** Security controls that rely on user configuration (such as a remote bot token or `TELEGRAM_CHAT_ID`) must use a "deny-by-default" (fail-closed) approach. If the required configuration is missing, the service should actively refuse to start or explicitly deny access rather than falling back to an open, permissive state.
 **Prevention:** Ensure all authorization logic follows a fail-closed pattern (`bool(CONFIG_VAR) and user == CONFIG_VAR`). Ensure critical services refuse to initialize if required security configuration is absent.
+## 2024-05-18 - Unauthenticated API Access
+**Vulnerability:** The web server and WebSocket endpoints allowed unauthenticated access (fail-open) if `API_KEY` was empty, posing a risk of system command execution by unauthenticated users.
+**Learning:** Fail-open configurations expose sensitive endpoints unnecessarily and rely on users correctly configuring security settings.
+**Prevention:** Enforce a fail-closed default. Always explicitly deny access (raise exceptions or close connections) when required authentication configuration is missing, unless intentionally serving public static assets.

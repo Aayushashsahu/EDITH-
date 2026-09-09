@@ -15,7 +15,7 @@ mock_config.PORT = 8888
 mock_config.SYSTEM_NAME = "TEST"
 mock_config.SYSTEM_VERSION = "1.0"
 mock_config.HOST = "127.0.0.1"
-mock_config.API_KEY = ""
+mock_config.API_KEY = "test_key"
 mock_config.ALLOWED_ORIGINS = ["*"]
 mock_config.BASE_DIR = Path(__file__).parent / "mock_base_dir"
 mock_config.TASKS_DB = Path(__file__).parent / "mock_base_dir" / "tasks.db"
@@ -62,7 +62,7 @@ class TestMainEndpoints(unittest.TestCase):
         main_module.orc.brain.count.return_value = 42
         main_module.orc.sys.stats_dict.return_value = {"cpu": 10, "ram": 50}
 
-        response = self.client.get("/api/status")
+        response = self.client.get("/api/status", headers={"X-API-Key": "test_key"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["online"], True)
@@ -73,7 +73,7 @@ class TestMainEndpoints(unittest.TestCase):
 
     def test_history(self):
         main_module.mem.all.return_value = [{"role": "user", "content": "hi"}]
-        response = self.client.get("/api/history")
+        response = self.client.get("/api/history", headers={"X-API-Key": "test_key"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["messages"], [{"role": "user", "content": "hi"}])
 
@@ -83,20 +83,20 @@ class TestMainEndpoints(unittest.TestCase):
 
         # GET /api/tasks
         mock_tm_instance.list_tasks.return_value = [{"id": 1, "title": "Buy milk"}]
-        response = self.client.get("/api/tasks")
+        response = self.client.get("/api/tasks", headers={"X-API-Key": "test_key"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["tasks"], [{"id": 1, "title": "Buy milk"}])
 
         # POST /api/tasks
         mock_tm_instance.add.return_value = {"id": 2, "title": "Write tests"}
-        response = self.client.post("/api/tasks", json={"title": "Write tests"})
+        response = self.client.post("/api/tasks", json={"title": "Write tests"}, headers={"X-API-Key": "test_key"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"id": 2, "title": "Write tests"})
         mock_tm_instance.add.assert_called_once_with("Write tests", "", "medium")
 
         # PATCH /api/tasks/{task_id}
         mock_tm_instance.complete.return_value = "Task 1 marked complete."
-        response = self.client.patch("/api/tasks/1")
+        response = self.client.patch("/api/tasks/1", headers={"X-API-Key": "test_key"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["result"], "Task 1 marked complete.")
         mock_tm_instance.complete.assert_called_once_with(1)
@@ -104,19 +104,19 @@ class TestMainEndpoints(unittest.TestCase):
     def test_ingest_success(self):
         async def mock_ingest_text(text, source): return 5
         main_module.orc.brain.ingest_text = MagicMock(side_effect=mock_ingest_text)
-        response = self.client.post("/api/ingest", json={"text": "some new info", "source": "test"})
+        response = self.client.post("/api/ingest", json={"text": "some new info", "source": "test"}, headers={"X-API-Key": "test_key"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["chunks"], 5)
         main_module.orc.brain.ingest_text.assert_called_once_with("some new info", "test")
 
     def test_ingest_missing_text(self):
-        response = self.client.post("/api/ingest", json={"source": "test"})
+        response = self.client.post("/api/ingest", json={"source": "test"}, headers={"X-API-Key": "test_key"})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["error"], "no text")
 
     def test_notes(self):
         main_module.orc.sys.read_notes.return_value = "My notes"
-        response = self.client.get("/api/notes")
+        response = self.client.get("/api/notes", headers={"X-API-Key": "test_key"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["notes"], "My notes")
 
