@@ -17,3 +17,6 @@
 ## 2026-08-03 - HTML5 Canvas Batching vs Pre-rendering
 **Learning:** While batching canvas paths (e.g., using moveTo to separate sub-paths before a single fill) avoids redundant state changes, drawing hundreds of static shapes repeatedly inside a requestAnimationFrame loop still incurs heavy CPU overhead due to evaluating the paths frame after frame.
 **Action:** Always pre-render complex static canvas elements (like grids or dots) to an offscreen canvas. Then, simply copy the pre-rendered texture using drawImage(offscreenCanvas, 0, 0) during the main animation loop to vastly reduce CPU usage.
+## 2024-05-31 - Async File I/O Optimization
+**Learning:** Using synchronous I/O operations (like `fitz.open` for PDFs and `Path.read_text`) inside an `async` execution context blocks the main event loop, causing severe latency degradation across the entire system.
+**Action:** Wrapped synchronous file parsing functions in `asyncio.to_thread()` (e.g., in `backend/memory/brain.py`) to offload I/O blocking operations to worker threads, preventing the asyncio event loop from being blocked.
