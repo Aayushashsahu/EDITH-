@@ -25,7 +25,8 @@ from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 async def verify_api_key(request: Request, api_key_header: str = Security(api_key_header)):
-    if not API_KEY: return True
+    if not API_KEY:
+        raise HTTPException(status_code=500, detail="Server configuration error: API_KEY not set")
     if request.url.path == "/" or request.url.path.startswith("/static"):
         return True
     if api_key_header is not None and secrets.compare_digest(api_key_header, API_KEY):
@@ -83,11 +84,13 @@ async def shutdown():
 # ── WebSocket ─────────────────────────────────────────────────────────────────
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
-    if API_KEY:
-        ws_key = ws.query_params.get("api_key")
-        if ws_key is None or not secrets.compare_digest(ws_key, API_KEY):
-            await ws.close(code=1008)
-            return
+    if not API_KEY:
+        await ws.close(code=1008, reason="Server configuration error: API_KEY not set")
+        return
+    ws_key = ws.query_params.get("api_key")
+    if ws_key is None or not secrets.compare_digest(ws_key, API_KEY):
+        await ws.close(code=1008)
+        return
     await ws.accept()
     clients.append(ws)
     await ws.send_text(json.dumps({
