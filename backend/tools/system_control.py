@@ -4,7 +4,12 @@ Full Windows control from WSL via cmd.exe / PowerShell bridge.
 Also handles WSL-side file ops, shell commands, processes.
 """
 
-import os, re, subprocess, datetime, socket, psutil
+import os
+import re
+import subprocess
+import datetime
+import socket
+import psutil
 from pathlib import Path
 from config.config import WIN_CMD, WIN_PS, WIN_USER, NOTES_FILE
 
@@ -41,8 +46,8 @@ class SystemControl:
         return now.strftime("It is %I:%M %p on %A, %d %B %Y.")
 
     # ── System stats ──────────────────────────────────────────────────────────
-    def system_info(self) -> str:
-        cpu  = psutil.cpu_percent(interval=0.5)
+    def system_info(self, interval: float | None = 0.5) -> str:
+        cpu  = psutil.cpu_percent(interval=interval)
         ram  = psutil.virtual_memory()
         disk = psutil.disk_usage("/")
         bat  = psutil.sensors_battery()
@@ -51,8 +56,8 @@ class SystemControl:
                 f"({ram.used>>20}MB/{ram.total>>20}MB)  ·  "
                 f"Disk {disk.percent}%  ·  Battery {bat_s}")
 
-    def stats_dict(self) -> dict:
-        cpu  = psutil.cpu_percent(interval=0.3)
+    def stats_dict(self, interval: float | None = 0.3) -> dict:
+        cpu  = psutil.cpu_percent(interval=interval)
         ram  = psutil.virtual_memory()
         bat  = psutil.sensors_battery()
         return {
@@ -149,7 +154,7 @@ class SystemControl:
         pct = max(0, min(100, pct))
         out = _cmd(f"nircmd setsysvolume {int(pct*655.35)}")
         if "not recognized" in out.lower():
-            return f"Install nircmd for volume control. (https://www.nirsoft.net/utils/nircmd.html)"
+            return "Install nircmd for volume control. (https://www.nirsoft.net/utils/nircmd.html)"
         return f"Volume set to {pct}%."
 
     def mute(self) -> str:
