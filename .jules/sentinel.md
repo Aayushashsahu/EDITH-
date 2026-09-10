@@ -25,3 +25,8 @@
 **Vulnerability:** The Telegram integration used a fail-open authorization check `not TELEGRAM_CHAT_ID or str(update.effective_chat.id) == str(TELEGRAM_CHAT_ID)`, meaning if a user neglected to configure `TELEGRAM_CHAT_ID`, the bot would accept commands from any Telegram user on the internet. It also lacked authorization checks on the `/start` command.
 **Learning:** Security controls that rely on user configuration (such as a remote bot token or `TELEGRAM_CHAT_ID`) must use a "deny-by-default" (fail-closed) approach. If the required configuration is missing, the service should actively refuse to start or explicitly deny access rather than falling back to an open, permissive state.
 **Prevention:** Ensure all authorization logic follows a fail-closed pattern (`bool(CONFIG_VAR) and user == CONFIG_VAR`). Ensure critical services refuse to initialize if required security configuration is absent.
+
+## 2025-03-01 - [Cross-Site WebSocket Hijacking (CSWSH) in FastAPI]
+**Vulnerability:** WebSocket endpoints defined using `@app.websocket("/ws")` were not protected by FastAPI's `CORSMiddleware`, allowing Cross-Site WebSocket Hijacking (CSWSH) because any origin could establish a connection.
+**Learning:** In FastAPI/Starlette, `CORSMiddleware` applies to HTTP routes but does NOT automatically protect WebSocket endpoints. WebSockets are inherently vulnerable to cross-origin requests unless the `Origin` header is manually verified upon connection.
+**Prevention:** Always manually validate `ws.headers.get("origin")` against an allowed list of origins within the WebSocket connection handler before calling `ws.accept()`. Ensure validation explicitly permits `origin is None` so non-browser clients (e.g. mobile apps or Python scripts) remain functional.
