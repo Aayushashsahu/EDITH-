@@ -4,7 +4,7 @@ WebSocket real-time comms, REST API, static file serving.
 Start: uvicorn backend.main:app --host 0.0.0.0 --port 8888 --reload
 """
 
-import asyncio, json, os, sys, secrets
+import asyncio, json, os, sys, secrets, psutil
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, Security, Request
@@ -64,6 +64,8 @@ async def broadcast(event: dict):
 async def startup():
     global orc, mem, tts, sched
     print(f"\n\033[93m{'═'*50}")
+    # ⚡ Bolt: Prime the CPU measurement to avoid blocking event loop later
+    psutil.cpu_percent(interval=None)
     print(f"  E.D.I.T.H. {SYSTEM_VERSION}  —  Even Dead I'm The Hero")
     print(f"{'═'*50}\033[0m\n")
     mem   = MemoryStore()
@@ -134,7 +136,8 @@ async def serve_ui():
 
 @app.get("/api/status")
 async def status():
-    stats = orc.sys.stats_dict() if orc else {}
+    # ⚡ Bolt: Pass interval=None to prevent blocking the asyncio event loop for X seconds
+    stats = orc.sys.stats_dict(cpu_interval=None) if orc else {}
     return {
         "online":     True,
         "model":      orc.model if orc else "loading",
