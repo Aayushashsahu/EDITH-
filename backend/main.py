@@ -4,7 +4,11 @@ WebSocket real-time comms, REST API, static file serving.
 Start: uvicorn backend.main:app --host 0.0.0.0 --port 8888 --reload
 """
 
-import asyncio, json, os, sys, secrets
+import asyncio
+import json
+import os
+import sys
+import secrets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, Security, Request
@@ -16,7 +20,6 @@ import uvicorn
 
 from backend.agents.orchestrator import Orchestrator
 from backend.memory.store import MemoryStore
-from backend.memory.brain import SecondBrain
 from backend.voice.tts import TTSEngine
 from backend.automations.scheduler import setup as setup_sched
 from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY, ALLOWED_ORIGINS
@@ -62,6 +65,8 @@ async def broadcast(event: dict):
 
 @app.on_event("startup")
 async def startup():
+    import psutil
+    psutil.cpu_percent(interval=None)  # Prime the CPU percent calculation
     global orc, mem, tts, sched
     print(f"\n\033[93m{'═'*50}")
     print(f"  E.D.I.T.H. {SYSTEM_VERSION}  —  Even Dead I'm The Hero")
@@ -134,7 +139,7 @@ async def serve_ui():
 
 @app.get("/api/status")
 async def status():
-    stats = orc.sys.stats_dict() if orc else {}
+    stats = orc.sys.stats_dict(interval=None) if orc else {}
     return {
         "online":     True,
         "model":      orc.model if orc else "loading",
