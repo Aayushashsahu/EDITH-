@@ -17,3 +17,6 @@
 ## 2026-08-03 - HTML5 Canvas Batching vs Pre-rendering
 **Learning:** While batching canvas paths (e.g., using moveTo to separate sub-paths before a single fill) avoids redundant state changes, drawing hundreds of static shapes repeatedly inside a requestAnimationFrame loop still incurs heavy CPU overhead due to evaluating the paths frame after frame.
 **Action:** Always pre-render complex static canvas elements (like grids or dots) to an offscreen canvas. Then, simply copy the pre-rendered texture using drawImage(offscreenCanvas, 0, 0) during the main animation loop to vastly reduce CPU usage.
+## 2024-10-24 - Async Event Loop Blocking via psutil.cpu_percent
+**Learning:** Using `psutil.cpu_percent(interval=X)` within synchronously executed logic in an async FastAPI endpoint blocks the entire event loop for `X` seconds, severely degrading performance and responsiveness for all concurrent requests.
+**Action:** In FastAPI/asyncio applications, always prime `psutil.cpu_percent(interval=None)` during application startup, and then explicitly pass `interval=None` to it when called within heavily polled endpoints (like `/api/status`) to instantly retrieve the non-blocking CPU usage metric.
