@@ -25,3 +25,8 @@
 **Vulnerability:** The Telegram integration used a fail-open authorization check `not TELEGRAM_CHAT_ID or str(update.effective_chat.id) == str(TELEGRAM_CHAT_ID)`, meaning if a user neglected to configure `TELEGRAM_CHAT_ID`, the bot would accept commands from any Telegram user on the internet. It also lacked authorization checks on the `/start` command.
 **Learning:** Security controls that rely on user configuration (such as a remote bot token or `TELEGRAM_CHAT_ID`) must use a "deny-by-default" (fail-closed) approach. If the required configuration is missing, the service should actively refuse to start or explicitly deny access rather than falling back to an open, permissive state.
 **Prevention:** Ensure all authorization logic follows a fail-closed pattern (`bool(CONFIG_VAR) and user == CONFIG_VAR`). Ensure critical services refuse to initialize if required security configuration is absent.
+
+## 2024-05-24 - [Fix CSWSH]
+**Vulnerability:** Cross-Site WebSocket Hijacking (CSWSH) via missing `Origin` validation.
+**Learning:** `CORSMiddleware` in FastAPI does not automatically protect WebSocket routes from CSWSH. WebSockets do not respect SOP (Same-Origin Policy), so without explicit validation of the `Origin` header, attackers can hijack the connection via CSRF-like mechanisms from a malicious site. However, legitimate non-browser clients (e.g., Python scripts or mobile apps) often don't send an `Origin` header.
+**Prevention:** Always manually validate the `Origin` header on WebSocket connections if it is present. Explicitly allow connections where `origin is None` so as not to break non-browser API access, while ensuring browsers (which always send an `Origin` or send `null`) are blocked if their origin is not trusted.
