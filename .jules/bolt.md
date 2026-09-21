@@ -17,3 +17,6 @@
 ## 2026-08-03 - HTML5 Canvas Batching vs Pre-rendering
 **Learning:** While batching canvas paths (e.g., using moveTo to separate sub-paths before a single fill) avoids redundant state changes, drawing hundreds of static shapes repeatedly inside a requestAnimationFrame loop still incurs heavy CPU overhead due to evaluating the paths frame after frame.
 **Action:** Always pre-render complex static canvas elements (like grids or dots) to an offscreen canvas. Then, simply copy the pre-rendered texture using drawImage(offscreenCanvas, 0, 0) during the main animation loop to vastly reduce CPU usage.
+## 2026-09-21 - Offload blocking file I/O to threads in async contexts
+**Learning:** In async applications using an event loop (like FastAPI or asyncio servers), performing synchronous file I/O operations (such as large text reads or parsing PDFs) directly in coroutines will block the main thread and cause event loop stalls, leading to significant latency bottlenecks.
+**Action:** Always wrap synchronous blocking file I/O and CPU-bound operations in `await asyncio.to_thread(...)` when executing within async methods to offload them to a separate thread, keeping the main event loop responsive.

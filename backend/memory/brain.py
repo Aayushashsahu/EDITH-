@@ -51,12 +51,16 @@ class SecondBrain:
 
     async def ingest_file(self, filepath: str) -> int:
         p = Path(filepath)
-        if not p.exists():
+        # ⚡ Bolt: Offload potentially slow network drive checks to a background thread
+        if not await asyncio.to_thread(p.exists):
             return 0
+
+        # ⚡ Bolt: Offload blocking file I/O and CPU-bound parsing to avoid stalling the event loop.
+        # Expected impact: Prevents main loop latency spikes during large document ingestion.
         if p.suffix.lower() == ".pdf":
-            text = self._read_pdf(filepath)
+            text = await asyncio.to_thread(self._read_pdf, filepath)
         else:
-            text = p.read_text(errors="ignore")
+            text = await asyncio.to_thread(p.read_text, errors="ignore")
         return await self.ingest_text(text, source=p.name)
 
     # ── Retrieval ─────────────────────────────────────────────────────────────
