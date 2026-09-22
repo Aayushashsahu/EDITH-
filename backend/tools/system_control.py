@@ -42,7 +42,7 @@ class SystemControl:
 
     # ── System stats ──────────────────────────────────────────────────────────
     def system_info(self) -> str:
-        cpu  = psutil.cpu_percent(interval=0.5)
+        cpu  = psutil.cpu_percent(interval=None)
         ram  = psutil.virtual_memory()
         disk = psutil.disk_usage("/")
         bat  = psutil.sensors_battery()
@@ -52,7 +52,7 @@ class SystemControl:
                 f"Disk {disk.percent}%  ·  Battery {bat_s}")
 
     def stats_dict(self) -> dict:
-        cpu  = psutil.cpu_percent(interval=0.3)
+        cpu  = psutil.cpu_percent(interval=None)
         ram  = psutil.virtual_memory()
         bat  = psutil.sensors_battery()
         return {
