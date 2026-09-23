@@ -15,3 +15,7 @@
 ## 2024-08-04 - Strict ARIA labels required for unlabelled input fields in innerHTML modals
 **Learning:** Monolithic vanilla JS apps heavily relying on dynamic `innerHTML` modal templates often lack structural semantic `<form>` contexts or explicit `<label>` tags to maintain minimalistic styling. This causes screen readers to misidentify input/textarea elements, treating them only by their `placeholder` attribute (if at all), matching the "Bad UX Code" pattern.
 **Action:** When working on dynamic `innerHTML` templates lacking semantic context, always ensure inputs and textareas strictly carry explicit descriptive `aria-label` attributes for accessibility compliance.
+
+## 2024-08-04 - ARIA Live Regions for Vanilla JS Dynamic Updates
+**Learning:** In vanilla JavaScript frontends that heavily rely on `innerHTML` for dynamic content updates (like chat logs and notification zones) or custom modals, screen readers fail to detect and announce the new content. Standard elements require explicit ARIA attributes to become accessible components.
+**Action:** Always add `aria-live="polite"` to containers receiving frequent, non-disruptive `innerHTML` updates (like `#notif-zone`, `#chat-log`). Ensure custom modals include `role="dialog"`, `aria-modal="true"`, and `aria-labelledby` so they are correctly recognized and navigated by screen readers.
