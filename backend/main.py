@@ -4,7 +4,11 @@ WebSocket real-time comms, REST API, static file serving.
 Start: uvicorn backend.main:app --host 0.0.0.0 --port 8888 --reload
 """
 
-import asyncio, json, os, sys, secrets
+import asyncio
+import json
+import os
+import sys
+import secrets
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, Security, Request
@@ -16,7 +20,6 @@ import uvicorn
 
 from backend.agents.orchestrator import Orchestrator
 from backend.memory.store import MemoryStore
-from backend.memory.brain import SecondBrain
 from backend.voice.tts import TTSEngine
 from backend.automations.scheduler import setup as setup_sched
 from config.config import HOST, PORT, BASE_DIR, SYSTEM_NAME, SYSTEM_VERSION, API_KEY, ALLOWED_ORIGINS
@@ -84,6 +87,10 @@ async def shutdown():
 # ── WebSocket ─────────────────────────────────────────────────────────────────
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
+    origin = ws.headers.get("origin")
+    if "*" not in ALLOWED_ORIGINS and origin not in ALLOWED_ORIGINS:
+        await ws.close(code=1008)
+        return
     if API_KEY:
         ws_key = ws.query_params.get("api_key")
         if ws_key is None or not secrets.compare_digest(ws_key, API_KEY):
