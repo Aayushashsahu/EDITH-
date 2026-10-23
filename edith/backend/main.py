@@ -62,6 +62,8 @@ async def broadcast(event: dict):
 @app.on_event("startup")
 async def startup():
     global orc, mem, tts, sched
+    import psutil
+    psutil.cpu_percent(interval=None) # Prime CPU percent
     print(f"\n\033[93m{'═'*50}")
     print(f"  E.D.I.T.H. {SYSTEM_VERSION}  —  Even Dead I'm The Hero")
     print(f"{'═'*50}\033[0m\n")
@@ -133,7 +135,7 @@ async def serve_ui():
 
 @app.get("/api/status")
 async def status():
-    stats = orc.sys.stats_dict() if orc else {}
+    stats = orc.sys.stats_dict(interval=None) if orc else {}
     return {
         "online":     True,
         "model":      orc.model if orc else "loading",
