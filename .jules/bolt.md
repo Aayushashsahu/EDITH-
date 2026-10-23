@@ -17,3 +17,6 @@
 ## 2026-08-03 - HTML5 Canvas Batching vs Pre-rendering
 **Learning:** While batching canvas paths (e.g., using moveTo to separate sub-paths before a single fill) avoids redundant state changes, drawing hundreds of static shapes repeatedly inside a requestAnimationFrame loop still incurs heavy CPU overhead due to evaluating the paths frame after frame.
 **Action:** Always pre-render complex static canvas elements (like grids or dots) to an offscreen canvas. Then, simply copy the pre-rendered texture using drawImage(offscreenCanvas, 0, 0) during the main animation loop to vastly reduce CPU usage.
+## 2024-10-25 - Fixing Asyncio Task Garbage Collection in __del__
+**Learning:** Assigning a background task created in an object's `__del__` method (such as `self._close_task = loop.create_task(...)`) fails to retain the task because the object `self` is actively being garbage collected. This causes "Task was destroyed but it is pending!" resource leak warnings in Python.
+**Action:** Instead of assigning the background task to an instance attribute in `__del__`, always assign it to a class-level set (e.g., `self.__class__._close_tasks.add(task)`) and use `task.add_done_callback(self.__class__._close_tasks.discard)` to ensure a strong global reference is retained until the task completes.
