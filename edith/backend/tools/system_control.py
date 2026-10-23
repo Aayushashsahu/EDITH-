@@ -4,7 +4,12 @@ Full Windows control from WSL via cmd.exe / PowerShell bridge.
 Also handles WSL-side file ops, shell commands, processes.
 """
 
-import os, re, subprocess, datetime, socket, psutil
+import os
+import re
+import subprocess
+import datetime
+import socket
+import psutil
 from pathlib import Path
 from config.config import WIN_CMD, WIN_PS, WIN_USER, NOTES_FILE
 
@@ -33,6 +38,15 @@ def _ps(script: str) -> str:
         return f"PowerShell error: {e}"
 
 
+# ⚡ OPTIMIZATION: Non-blocking CPU measurement
+# Prime the cpu_percent metric with interval=None at the module level so subsequent calls
+# return immediately instead of blocking the main event loop thread for 0.3-0.5s.
+# Impact: Reduces /api/status blocking time from ~300ms to <1ms.
+try:
+    psutil.cpu_percent(interval=None)
+except Exception:
+    pass
+
 class SystemControl:
 
     # ── Time / date ───────────────────────────────────────────────────────────
@@ -42,7 +56,7 @@ class SystemControl:
 
     # ── System stats ──────────────────────────────────────────────────────────
     def system_info(self) -> str:
-        cpu  = psutil.cpu_percent(interval=0.5)
+        cpu  = psutil.cpu_percent(interval=None)
         ram  = psutil.virtual_memory()
         disk = psutil.disk_usage("/")
         bat  = psutil.sensors_battery()
@@ -52,7 +66,7 @@ class SystemControl:
                 f"Disk {disk.percent}%  ·  Battery {bat_s}")
 
     def stats_dict(self) -> dict:
-        cpu  = psutil.cpu_percent(interval=0.3)
+        cpu  = psutil.cpu_percent(interval=None)
         ram  = psutil.virtual_memory()
         bat  = psutil.sensors_battery()
         return {
@@ -149,7 +163,7 @@ class SystemControl:
         pct = max(0, min(100, pct))
         out = _cmd(f"nircmd setsysvolume {int(pct*655.35)}")
         if "not recognized" in out.lower():
-            return f"Install nircmd for volume control. (https://www.nirsoft.net/utils/nircmd.html)"
+            return "Install nircmd for volume control. (https://www.nirsoft.net/utils/nircmd.html)"
         return f"Volume set to {pct}%."
 
     def mute(self) -> str:
