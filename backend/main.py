@@ -84,6 +84,14 @@ async def shutdown():
 # ── WebSocket ─────────────────────────────────────────────────────────────────
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
+    # 🛡️ Sentinel Security Fix:
+    # CORSMiddleware does not protect WebSockets. We manually validate the Origin
+    # header to prevent Cross-Site WebSocket Hijacking (CSWSH) when API_KEY is disabled.
+    origin = ws.headers.get("origin")
+    if origin and "*" not in ALLOWED_ORIGINS and origin not in ALLOWED_ORIGINS:
+        await ws.close(code=1008)
+        return
+
     if API_KEY:
         ws_key = ws.query_params.get("api_key")
         if ws_key is None or not secrets.compare_digest(ws_key, API_KEY):
