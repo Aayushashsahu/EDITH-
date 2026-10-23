@@ -3,7 +3,6 @@ E.D.I.T.H. V8 — Orchestrator (Full)
 Brain of EDITH: intent routing → vision → RAG → LLM with model selection.
 """
 
-import asyncio
 import datetime
 from typing import Callable
 
