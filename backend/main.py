@@ -49,15 +49,26 @@ sched             = None
 
 
 async def broadcast(event: dict):
-    dead = []
+    # ⚡ Bolt Optimization: Broadcast concurrently instead of sequentially to prevent latency bottlenecks
+    # Create a shallow copy to prevent race conditions if clients disconnect mid-broadcast
+    active_clients = list(clients)
+    if not active_clients:
+        return
+
     msg  = json.dumps(event)
-    for ws in clients:
+
+    async def send(ws):
         try:
             await ws.send_text(msg)
+            return None
         except Exception:
-            dead.append(ws)
-    for ws in dead:
-        clients.remove(ws)
+            return ws
+
+    results = await asyncio.gather(*(send(ws) for ws in active_clients))
+
+    for ws in results:
+        if ws and ws in clients:
+            clients.remove(ws)
 
 
 @app.on_event("startup")

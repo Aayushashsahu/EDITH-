@@ -17,3 +17,6 @@
 ## 2026-08-03 - HTML5 Canvas Batching vs Pre-rendering
 **Learning:** While batching canvas paths (e.g., using moveTo to separate sub-paths before a single fill) avoids redundant state changes, drawing hundreds of static shapes repeatedly inside a requestAnimationFrame loop still incurs heavy CPU overhead due to evaluating the paths frame after frame.
 **Action:** Always pre-render complex static canvas elements (like grids or dots) to an offscreen canvas. Then, simply copy the pre-rendered texture using drawImage(offscreenCanvas, 0, 0) during the main animation loop to vastly reduce CPU usage.
+## 2026-10-31 - Concurrent WebSocket Broadcasting
+**Learning:** Iterating over a shared list of WebSocket clients (`clients`) and awaiting network I/O (`await ws.send_text(msg)`) sequentially creates a significant bottleneck, particularly with a large number of connected clients. If the event loop yields during an `await`, there is also a critical race condition if the client list is modified concurrently (such as a disconnect).
+**Action:** Always create a shallow copy of the active clients list (e.g., `list(clients)`) to safely isolate the state, and use `asyncio.gather` combined with a helper task to blast events concurrently across all clients.
