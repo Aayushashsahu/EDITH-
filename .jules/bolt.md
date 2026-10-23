@@ -17,3 +17,6 @@
 ## 2026-08-03 - HTML5 Canvas Batching vs Pre-rendering
 **Learning:** While batching canvas paths (e.g., using moveTo to separate sub-paths before a single fill) avoids redundant state changes, drawing hundreds of static shapes repeatedly inside a requestAnimationFrame loop still incurs heavy CPU overhead due to evaluating the paths frame after frame.
 **Action:** Always pre-render complex static canvas elements (like grids or dots) to an offscreen canvas. Then, simply copy the pre-rendered texture using drawImage(offscreenCanvas, 0, 0) during the main animation loop to vastly reduce CPU usage.
+## 2024-05-19 - Concurrent WebSocket Broadcasting
+**Learning:** In the `broadcast` function, iterating over connected websocket clients with a sequential `await ws.send_text(msg)` causes a major performance bottleneck as the number of clients increases. Each client's send operation blocks the loop until it completes, severely degrading the near-real-time responsiveness required for broadcasting.
+**Action:** Replaced the sequential `await` loop in `broadcast` (both `backend/main.py` and `edith/backend/main.py`) with `asyncio.gather(*tasks, return_exceptions=True)`. This allows all messages to be sent concurrently, and gracefully collects any connection exceptions for dead connection cleanup, drastically reducing the overall broadcast latency.
