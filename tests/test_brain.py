@@ -85,10 +85,10 @@ class TestSecondBrain(unittest.IsolatedAsyncioTestCase):
         # Should only call ingest for .txt
         self.brain.ingest_file.assert_called_once_with(str(mock_file1))
 
-    def test_ingest_text(self):
+    async def test_ingest_text(self):
         text = "This is a test text that needs to be long enough to pass the 60 char strip length check inside the chunking method. Adding some more text to ensure it passes."
 
-        result = self.brain.ingest_text(text, source="test_source")
+        result = await self.brain.ingest_text(text, source="test_source")
 
         self.assertEqual(result, 1) # Should result in 1 chunk
         self.mock_collection.upsert.assert_called_once()
@@ -100,8 +100,8 @@ class TestSecondBrain(unittest.IsolatedAsyncioTestCase):
         self.assertIn('metadatas', kwargs)
         self.assertEqual(kwargs['metadatas'][0]['source'], "test_source")
 
-    def test_ingest_text_empty(self):
-        result = self.brain.ingest_text("")
+    async def test_ingest_text_empty(self):
+        result = await self.brain.ingest_text("")
         self.assertEqual(result, 0)
         self.mock_collection.upsert.assert_not_called()
 
@@ -114,7 +114,7 @@ class TestSecondBrain(unittest.IsolatedAsyncioTestCase):
         mock_path_instance.name = "test.txt"
         mock_path_instance.read_text.return_value = "Test content " * 10
 
-        self.brain.ingest_text = MagicMock(return_value=1)
+        self.brain.ingest_text = AsyncMock(return_value=1)
 
         result = await self.brain.ingest_file("test.txt")
 
@@ -140,7 +140,7 @@ class TestSecondBrain(unittest.IsolatedAsyncioTestCase):
         mock_path_instance.name = "test.pdf"
 
         # Test the fallback text when fitz is not installed
-        self.brain.ingest_text = MagicMock(return_value=1)
+        self.brain.ingest_text = AsyncMock(return_value=1)
 
         result = await self.brain.ingest_file("test.pdf")
 
