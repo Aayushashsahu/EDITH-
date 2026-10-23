@@ -10,6 +10,8 @@ from bs4 import BeautifulSoup
 
 
 class WebTools:
+    _close_tasks = set()
+
     def __init__(self):
         self._session = None
 
@@ -38,7 +40,9 @@ class WebTools:
                 loop = asyncio.get_event_loop()
                 if loop.is_running():
                     # Retain a strong reference to the background task
-                    self._close_task = loop.create_task(self.close())
+                    task = loop.create_task(self.close())
+                    self.__class__._close_tasks.add(task)
+                    task.add_done_callback(self.__class__._close_tasks.discard)
                 else:
                     loop.run_until_complete(self.close())
             except Exception:
