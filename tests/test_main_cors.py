@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
+from fastapi.websockets import WebSocketDisconnect
 import sys
 
 # Mocking missing dependencies as instructed by memory
@@ -21,11 +22,15 @@ patch("fastapi.staticfiles.StaticFiles.__init__", return_value=None).start()
 patch("fastapi.staticfiles.StaticFiles.__call__", new_callable=MagicMock).start()
 
 
-from edith.backend.main import app
+from edith.backend.main import app, verify_api_key
 
 class TestCors(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
+        app.dependency_overrides[verify_api_key] = lambda: True
+
+    def tearDown(self):
+        app.dependency_overrides = {}
 
     def test_cors_allowed_origin(self):
         # We test that an allowed origin gets the correct CORS response headers
@@ -47,6 +52,25 @@ class TestCors(unittest.TestCase):
         # In FastAPI with CORSMiddleware, if origin is not allowed, it responds with 400 Bad Request
         self.assertEqual(response.status_code, 400)
         self.assertNotIn("access-control-allow-origin", response.headers)
+
+    def test_cswsh_allowed_origin(self):
+        # Allow connecting with an allowed origin
+        with self.client.websocket_connect("/ws", headers={"Origin": "http://localhost:8888"}) as websocket:
+            data = websocket.receive_json()
+            self.assertEqual(data["type"], "system")
+
+    def test_cswsh_disallowed_origin(self):
+        # Reject connection from disallowed origin with 1008
+        with self.assertRaises(WebSocketDisconnect) as context:
+            with self.client.websocket_connect("/ws", headers={"Origin": "http://malicious.com"}):
+                pass
+        self.assertEqual(context.exception.code, 1008)
+
+    def test_cswsh_no_origin(self):
+        # Allow connection without an Origin header (e.g. non-browser clients)
+        with self.client.websocket_connect("/ws") as websocket:
+            data = websocket.receive_json()
+            self.assertEqual(data["type"], "system")
 
 if __name__ == "__main__":
     unittest.main()
