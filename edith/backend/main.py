@@ -36,7 +36,7 @@ async def verify_api_key(request: Request, api_key_header: str = Security(api_ke
     raise HTTPException(status_code=401, detail="Unauthorized")
 
 app = FastAPI(title=f"{SYSTEM_NAME} {SYSTEM_VERSION}", dependencies=[Depends(verify_api_key)])
-app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS, allow_methods=["GET", "POST", "PATCH"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "frontend" / "static")), name="static")
 
 # ── Shared state ──────────────────────────────────────────────────────────────
@@ -83,6 +83,10 @@ async def shutdown():
 # ── WebSocket ─────────────────────────────────────────────────────────────────
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
+    origin = ws.headers.get("origin")
+    if origin is not None and origin not in ALLOWED_ORIGINS and "*" not in ALLOWED_ORIGINS:
+        await ws.close(code=1008)
+        return
     if API_KEY:
         ws_key = ws.query_params.get("api_key")
         if ws_key is None or not secrets.compare_digest(ws_key, API_KEY):
