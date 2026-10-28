@@ -25,3 +25,7 @@
 **Vulnerability:** The Telegram integration used a fail-open authorization check `not TELEGRAM_CHAT_ID or str(update.effective_chat.id) == str(TELEGRAM_CHAT_ID)`, meaning if a user neglected to configure `TELEGRAM_CHAT_ID`, the bot would accept commands from any Telegram user on the internet. It also lacked authorization checks on the `/start` command.
 **Learning:** Security controls that rely on user configuration (such as a remote bot token or `TELEGRAM_CHAT_ID`) must use a "deny-by-default" (fail-closed) approach. If the required configuration is missing, the service should actively refuse to start or explicitly deny access rather than falling back to an open, permissive state.
 **Prevention:** Ensure all authorization logic follows a fail-closed pattern (`bool(CONFIG_VAR) and user == CONFIG_VAR`). Ensure critical services refuse to initialize if required security configuration is absent.
+## 2024-05-24 - Unrestricted Execution in shell method
+**Vulnerability:** Unrestricted command execution vulnerability due to `shell=True` in `subprocess.run` inside `backend/tools/system_control.py`.
+**Learning:** Passing untrusted input to a shell command using `shell=True` can lead to arbitrary code execution, allowing an attacker to run malicious commands.
+**Prevention:** Avoid using `shell=True` in `subprocess.run`. Tokenize the input using `shlex.split` before passing it to `subprocess.run`.
