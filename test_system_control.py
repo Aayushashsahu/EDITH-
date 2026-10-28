@@ -11,6 +11,18 @@ class TestSystemControl(unittest.TestCase):
     def setUp(self):
         self.control = sc.SystemControl()
 
+    @patch('edith.backend.tools.system_control.datetime')
+    def test_get_time(self, mock_datetime):
+        mock_now = MagicMock()
+        mock_now.strftime.return_value = "It is 03:15 PM on Monday, 01 January 2024."
+        mock_datetime.datetime.now.return_value = mock_now
+
+        res = self.control.get_time()
+
+        self.assertEqual(res, "It is 03:15 PM on Monday, 01 January 2024.")
+        mock_datetime.datetime.now.assert_called_once()
+        mock_now.strftime.assert_called_once_with("It is %I:%M %p on %A, %d %B %Y.")
+
     @patch('edith.backend.tools.system_control._ps')
     def test_open_url_valid_http(self, mock_ps):
         res = self.control.open_url("http://example.com")
