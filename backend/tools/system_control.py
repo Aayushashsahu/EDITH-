@@ -4,7 +4,7 @@ Full Windows control from WSL via cmd.exe / PowerShell bridge.
 Also handles WSL-side file ops, shell commands, processes.
 """
 
-import os, re, subprocess, datetime, socket, psutil
+import os, re, subprocess, datetime, socket, psutil, base64
 from pathlib import Path
 from config.config import WIN_CMD, WIN_PS, WIN_USER, NOTES_FILE
 
@@ -24,7 +24,8 @@ def _cmd(command: str) -> str:
 
 def _ps(script: str) -> str:
     try:
-        r = subprocess.run([WIN_PS, "-NoProfile", "-Command", script],
+        encoded_script = base64.b64encode(script.encode('utf-16le')).decode('utf-8')
+        r = subprocess.run([WIN_PS, "-NoProfile", "-EncodedCommand", encoded_script],
                            capture_output=True, text=True, timeout=20)
         return (r.stdout or r.stderr or "").strip()[:2000]
     except FileNotFoundError:

@@ -25,3 +25,8 @@
 **Vulnerability:** The Telegram integration used a fail-open authorization check `not TELEGRAM_CHAT_ID or str(update.effective_chat.id) == str(TELEGRAM_CHAT_ID)`, meaning if a user neglected to configure `TELEGRAM_CHAT_ID`, the bot would accept commands from any Telegram user on the internet. It also lacked authorization checks on the `/start` command.
 **Learning:** Security controls that rely on user configuration (such as a remote bot token or `TELEGRAM_CHAT_ID`) must use a "deny-by-default" (fail-closed) approach. If the required configuration is missing, the service should actively refuse to start or explicitly deny access rather than falling back to an open, permissive state.
 **Prevention:** Ensure all authorization logic follows a fail-closed pattern (`bool(CONFIG_VAR) and user == CONFIG_VAR`). Ensure critical services refuse to initialize if required security configuration is absent.
+
+## 2026-10-28 - Fix Command Execution with Unsanitized Input via PowerShell bridge
+**Vulnerability:** Command execution vulnerability when invoking PowerShell scripts across the WSL-to-Windows boundary with unescaped shell metacharacters.
+**Learning:** Passing unsanitized input directly to `subprocess.run` with PowerShell's `-Command` flag exposes the system to injection attacks, as shell characters are evaluated.
+**Prevention:** Convert PowerShell scripts to Base64 encoded strings (UTF-16LE) and execute them using the `-EncodedCommand` parameter. This safely bypasses PowerShell's string interpolation and evaluation phases.
